@@ -1,0 +1,744 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,amsfonts,latexsym}
+\usepackage{graphicx}
+\usepackage{lscape}
+\usepackage{pst-all,pst-poly,pst-node,pst-eucl,multido}      % From PSTricks
+\usepackage[nomessages]{fp}
+
+
+%\usepackage{times}
+
+\usepackage{a4wide}
+
+\newcommand{\href}[2]{#2}
+
+\newcommand{\xchor}{0} % x-coordinate.
+\newcommand{\ychor}{0} % y-coordinate.
+
+%% This calculates the values of the hex coordinate grid.
+% xc =  x + 0.5 y
+% yc =  sqrt(3)/2*y
+\newcommand{\hexcoord}[2]{%
+ \pstFPmul\ychor{#2}{0.5}
+ \pstFPadd\xchor{#1}\ychor
+ \pstFPmul\ychor{#2}{0.86602540378444}
+}
+
+% The width of 1 hex cell is 1 unit.
+% Hence if we want a 10mm hex we \psset{unit=10mm}
+\psset{unit=17mm}
+\newcommand{\hexcell}[2]{%
+\hexcoord{#1}{#2}
+\rput{30}(\xchor,\ychor){\PstPolygon[unit=0.57735026918963,PolyNbSides=6]}% 1/sqrt(3);
+}
+
+\newgray{lightgray}{0.8}
+
+\newcommand{\hexcellshaded}[2]{%
+\hexcoord{#1}{#2}
+\rput{30}(\xchor,\ychor){\PstPolygon[unit=0.57735026918963,PolyNbSides=6,fillcolor=yellow,fillstyle=solid]}% 1/sqrt(3);
+}
+
+% Place a counter in the spot.
+% Radius of the incircle of the hex is 0.5, so we make the radius a little smaller
+\newcommand{\hexcounter}[3]{%
+ \hexcoord{#1}{#2}
+ \pscircle[fillstyle=solid,fillcolor=#3,linecolor=#3](\xchor,\ychor){0.4}
+}
+
+\newcommand{\hexdot}[2]{%
+ \hexcoord{#1}{#2}
+ \psdot(\xchor,\ychor)
+}
+
+\newcommand{\hexcontent}[3]{%
+ \hexcoord{#1}{#2}
+ \rput(\xchor,\ychor){#3}
+}
+
+
+% This shows a curved line through three hexes.
+% used to display bridges
+\newcommand{\hexconnect}[4]{%
+ \hexcoord{#1}{#2}
+ \pnode(\xchor,\ychor){A}
+ \hexcoord{#3}{#4}
+ \pnode(\xchor,\ychor){B}
+ \ncline{A}{B}
+}
+
+\newcounter{hexedge}
+\newcommand{\hexboard}[2]{%
+\setcounter{hexedge}{0}
+% Place the hex cells.
+\multido{\Ia=1+1}{#1}{%
+  \multido{\Ib=1+1}{#1}{%
+   \hexcell{\Ia}{\Ib}
+  }
+}
+% Coloured boundary
+\multido{\Ia=1+1}{#1}{%
+ \hexcoord{\Ia}{1}
+ \rput(\xchor,\ychor){\psline[linecolor=red,linewidth=#2](-0.5,-0.288675)(0,-0.577350)(0.5,-0.288675)}
+ \hexcoord{\Ia}{#1}
+ \rput(\xchor,\ychor){\psline[linecolor=red,linewidth=#2](-0.5,0.288675)(0,0.577350)(0.5,0.288675)}
+ \hexcoord{1}{\Ia}
+ \rput(\xchor,\ychor){\psline[linecolor=blue,linewidth=#2](-0.5,-0.288675)(-0.5,0.288675)(0,0.577350)}
+ \hexcoord{#1}{\Ia}
+ \rput(\xchor,\ychor){\psline[linecolor=blue,linewidth=#2](0,-0.577350)(0.5,-0.288675)(0.5,0.288675)}
+ \addtocounter{hexedge}{1}
+ \rput(\Ia,1){\uput{0.2}[-120](0.25,-0.4330125){{\sf\color{red} \Alph{hexedge}}}}
+ \hexcoord{1}{\Ia}
+ \rput(\xchor,\ychor){\uput[l](-0.5,0){{\sf\color{blue} \arabic{hexedge}}}}
+}
+%% Awakward cells on the long diagonal
+\hexcoord{#1}{1}
+\rput(\xchor,\ychor){\psline[linecolor=blue,linewidth=#2](0.25,-0.4330125)(0.5,-0.288675)}
+\hexcoord{1}{#1}
+\rput(\xchor,\ychor){\psline[linecolor=red,linewidth=#2](-0.25,0.4330125)(0,0.577350)}
+}
+
+\parindent=0pt
+\parskip=2mm
+\columnsep=1cm
+%\renewcommand{\baselinestretch}{1.5}
+\pagestyle{empty}
+
+\newcommand{\R}{{\mathbb R}}
+\newcommand{\N}{{\mathbb N}}
+\newcommand{\Z}{{\mathbb Z}}
+\newcommand{\Q}{{\mathbb Q}}
+\newcommand{\C}{{\mathbb C}}
+
+
+\begin{document}
+\bibliographystyle{plain}
+
+\begin{landscape}
+% The width of 1 hex cell is 1 unit.
+% Hence if we want a 10mm hex we \psset{unit=10mm}
+\psset{unit=17mm,linewidth=1mm}
+
+\pspicture(2.2,1.5)(21,9.5)
+\hexboard{11}{1.5mm}
+\rput(2,10){{\Huge\sf Hex}}
+%\rput(15,0.48){{School of Mathematics}}
+\rput(15,0){\resizebox{50mm}{!}{\includegraphics{UoE.eps}}}%
+\rput(1.5,-0.5){{\tiny\sf \copyright\ Chris Sangwin \today}}%
+\endpspicture
+\end{landscape}
+%
+\begin{landscape}
+\pspicture(0,0)(10,9)
+\rput(1.5,6.5){%
+\begin{minipage}{9cm}
+{\sf
+{{\Huge\sf Hex rules}}\\[4mm]
+
+Hex is a connection strategy game for two players.\\[1mm]
+
+Players choose a colour and take turns.  On each turn one counter is placed in an empty hexagonal cell.\\[1mm]
+
+Counters may not be moved except with the {\em swap rule}. \\[1mm]
+
+The first player to form a connected path of their counters linking the opposing sides of the board marked by their colour wins.\\[1mm]
+
+The four corner hexagons belong to both adjacent sides.\\[1mm]
+
+{\em Swap rule:} on their first move the second player may move normally, or choose to swap their piece with that placed by the first player.   [This encourages the first player to only choose a moderately strong first move and so reduces any advantage of going first.  Ignore the swap rule for the first few games.]
+}
+\end{minipage}
+}
+%%%%%%%%%%%%%%
+\psset{unit=17mm,linewidth=1mm}
+\rput(3.5,3){\hexboard{7}{1.5mm}}
+\rput(12,1){%
+\begin{minipage}{9cm}
+{\sf
+{{\Huge\sf Notes}}\\[1mm]
+In theory any size board can be used. Start with the $7\times 7$ board above.\\[1mm]
+
+For more information see C.~Browne. {\em Hex Strategy: Making the Right Connections}. A K Peters/CRC Press, 2000.\\[1mm]
+
+A computer version of Hex, called {\em Hexy}, is available from {\tt http://vanshel.com/Hexy} and is a worthy opponent.
+
+}
+\end{minipage}
+}
+%%%%%%%%%%%%%%%%%
+\rput(6,1){%
+\begin{minipage}{8cm}
+{\sf
+{{\Huge\sf Basic strategy}}\\[1mm]
+Play defensively: defence is also attack.\\[1mm]
+
+Use bridges to make connections between your pieces {\em and} simultaneously to block your opponent.\\[1mm]
+
+If you can think of a strong response to your own move then look for a better one!\\[1mm]
+
+Never give up the game until it is clearly over but abandon areas of the board which are hopeless.
+}
+\end{minipage}
+}
+%%%%%%%%%%%%%%%%%
+\rput(0.6,1.7){%
+\begin{minipage}{6cm}
+{\sf
+{{\Huge\sf Bridges}}\\[1mm]
+The configuration below is known as a {\em bridge}. These two counters are strongly connected.  If blue takes one empty hex then red immediately takes the other.  But, beware of empty cells which are part of multiple bridges.
+}
+\end{minipage}
+}
+
+\psset{unit=9mm,linewidth=0.5mm}
+\rput(-1.5,-1.5){%
+\hexcell{1}{1}
+\hexcell{2}{1}
+\hexcell{1}{2}
+\hexcell{2}{2}
+\hexcounter{1}{1}{red}
+\hexcounter{2}{2}{red}
+\hexdot{1}{2}
+\hexdot{2}{1}
+\hexconnect{1}{1}{1}{2}
+\hexconnect{1}{1}{2}{1}
+\hexconnect{1}{2}{2}{2}
+\hexconnect{2}{1}{2}{2}
+}
+\endpspicture
+\end{landscape}
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\psset{unit=17mm,linewidth=1mm}
+\pspicture(2,0)(12,12)
+\rput(0,-2){%
+\multido{\Ia=1+1}{11}{\hexcell{\Ia}{1}}
+\multido{\Ia=1+1}{10}{\hexcell{\Ia}{2}}
+\multido{\Ia=1+1}{9}{\hexcell{\Ia}{3}}
+\multido{\Ia=1+1}{8}{\hexcell{\Ia}{4}}
+\multido{\Ia=1+1}{7}{\hexcell{\Ia}{5}}
+\multido{\Ia=1+1}{6}{\hexcell{\Ia}{6}}
+\multido{\Ia=1+1}{5}{\hexcell{\Ia}{7}}
+\multido{\Ia=1+1}{4}{\hexcell{\Ia}{8}}
+\multido{\Ia=1+1}{3}{\hexcell{\Ia}{9}}
+\multido{\Ia=1+1}{2}{\hexcell{\Ia}{10}}
+\multido{\Ia=1+1}{1}{\hexcell{\Ia}{11}}
+}
+%%%%%%%%%%%
+\rput(3,10){%
+\begin{minipage}{7cm}
+{\sf
+{{\Huge\sf Game of Y}}\\[4mm]
+
+Y is a connection game for two players.\\[1mm]
+
+Players choose a colour and take turns.  On each turn one counter is placed in an empty hexagonal cell.\\[1mm]
+
+Counters may not be moved except with the {\em swap rule}. \\[1mm]
+
+The first player to form a connected path of their counters linking all three opposing sides of the board wins.\\[1mm]
+
+The three corner hexagons belong to both adjacent sides.\\[1mm]
+}
+\end{minipage}
+}
+\rput(9.5,11){%
+\begin{minipage}{8cm}
+{\sf
+{\em Swap rule:} on their first move the second player may move normally, or choose to swap their piece with that placed by the first player.   [This encourages the first player to only choose a moderately strong first move and so reduces any advantage of going first.  Ignore the swap rule for the first few games.]
+}
+\end{minipage}
+}
+\rput(9,13){\resizebox{60mm}{!}{\includegraphics{UoE.eps}}}%
+\rput(1.5,-2.5){{\tiny\sf CJS \today}}%
+\endpspicture
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+$~$\\[-1cm]
+{{\Huge\sf Cross/Pentalath/Yavalath/Three player Hex}}
+
+% These games all use a 7*7, a 6*6 or a 5*5 hex.
+\psset{unit=17mm,linewidth=1mm}
+\pspicture(5,0)(21,12)
+\rput{30}(3.5,-5.5){%
+\multido{\Ia=7+1}{7}{%
+  \multido{\Ib=1+1}{7}{%
+   \hexcell{\Ia}{\Ib}
+  }
+}
+\multido{\Ia=1+1}{7}{%
+  \multido{\Ib=7+1}{7}{%
+   \hexcell{\Ia}{\Ib}
+  }
+}
+\multido{\Ia=1+1}{7}{%
+  \multido{\Ib=7+-1}{\Ia}{%
+   \hexcell{\Ia}{\Ib}
+  }
+}
+\multido{\Ia=8+1}{5}{\hexcell{\Ia}{8}}
+\multido{\Ia=8+1}{4}{\hexcell{\Ia}{9}}
+\multido{\Ia=8+1}{3}{\hexcell{\Ia}{10}}
+\multido{\Ia=8+1}{2}{\hexcell{\Ia}{11}}
+\multido{\Ia=8+1}{1}{\hexcell{\Ia}{12}}
+% Shaded cells
+\multido{\Ia=7+1}{6}{\hexcellshaded{\Ia}{2}}
+\multido{\Ia=2+1}{6}{\hexcellshaded{\Ia}{12}}
+\multido{\Ia=2+1}{6}{\hexcellshaded{12}{\Ia}}
+\multido{\Ia=7+1}{6}{\hexcellshaded{2}{\Ia}}
+\hexcellshaded{6}{3}
+\hexcellshaded{5}{4}
+\hexcellshaded{4}{5}
+\hexcellshaded{3}{6}
+\hexcellshaded{11}{8}
+\hexcellshaded{10}{9}
+\hexcellshaded{9}{10}
+\hexcellshaded{8}{11}
+}
+%\psframe(5,0)(21,12)
+%%%%%%%%%%%
+\rput(5.6,11){%
+\begin{minipage}{6cm}
+{\sf
+{\bf 3 player Hex:} as soon as it is no longer possible for a player to connect their edges, that player is eliminated and may not place further pieces. This avoids deadlock.
+}
+\end{minipage}
+}
+%%%%%%%%%%%
+\rput(13.5,11.3){%
+\begin{minipage}{6cm}
+{\sf
+{\bf Cross:} 2 players.  Connect three non-adjacent sides without connecting two opposite ones first.
+}
+\end{minipage}
+}
+%%%%%%%%%%%
+\rput(5.6,-1.5){%
+\begin{minipage}{6cm}
+{\sf
+{\bf Pentalath:} 5-sided hex-hex board.\\
+Make a line of 5 or more of your colour.
+}
+\end{minipage}
+}
+%%%%%%%%%%%
+\rput(13.5,-1.5){%
+\begin{minipage}{6cm}
+{\sf
+{\bf Yavalath:} 5-sided hex-hex board.\\
+2 or 3 players.  Make a line of 4 of your colour without first making a line of 3.
+}
+\end{minipage}
+}
+%%%%%%%%%%%
+\endpspicture
+
+\newpage
+
+\section*{Edge templates}
+
+\begin{center}
+\psset{unit=9mm}
+\pspicture(2,0)(6,2)%\psframe(1,0)(4,2)
+\rput(-2,1.5){\parbox{5cm}{The most important template is the bridge.}}
+\psset{linewidth=0.5mm}
+\rput(1,0){%
+\hexcell{1}{1}
+\hexcellshaded{2}{1}
+\hexcellshaded{1}{2}
+\hexcell{2}{2}
+\hexcounter{1}{1}{red}
+\hexcounter{2}{2}{red}
+\hexdot{1}{2}
+\hexdot{2}{1}
+\psset{linewidth=0.25mm}
+\hexconnect{1}{1}{1}{2}
+\hexconnect{1}{1}{2}{1}
+\hexconnect{1}{2}{2}{2}
+\hexconnect{2}{1}{2}{2}
+}
+\endpspicture
+\end{center}
+
+\begin{center}
+% Bridge to edge.
+\psset{unit=9mm}
+\pspicture(2,0)(6,2)%\psframe(2,0)(6,2)
+\rput(-2,1.5){\parbox{5cm}{The same reasoning can be applied to {\em edge templates}.}}
+\psset{linewidth=0.5mm}
+\multido{\Ia=2+1}{4}{\hexcell{\Ia}{1}}
+\multido{\Ia=3+1}{2}{\hexcellshaded{\Ia}{1}}
+\multido{\Ia=2+1}{3}{\hexcell{\Ia}{2}}
+% Coloured boundary
+\multido{\Ia=2+1}{4}{%
+ \hexcoord{\Ia}{1}
+ \rput(\xchor,\ychor){\psline[linecolor=red,linewidth=0.5mm](-0.5,-0.288675)(0,-0.577350)(0.5,-0.288675)}
+}
+%
+\hexcounter{3}{2}{red}
+\hexdot{3}{1}
+\hexdot{4}{1}
+\psset{linewidth=0.25mm}
+\hexconnect{3}{2}{3}{1}
+\hexconnect{3}{2}{4}{1}
+\endpspicture
+\end{center}
+
+\begin{center}
+% Template 1.
+\psset{unit=9mm}
+\pspicture(2,0)(10,4)%\psframe(2,0)(8,4)
+\psset{linewidth=0.5mm}
+\multido{\Ia=2+1}{6}{\hexcell{\Ia}{1}}
+\multido{\Ia=3+1}{4}{\hexcellshaded{\Ia}{1}}
+\multido{\Ia=2+1}{5}{\hexcell{\Ia}{2}}
+\multido{\Ia=3+1}{3}{\hexcellshaded{\Ia}{2}}
+\multido{\Ia=2+1}{4}{\hexcell{\Ia}{3}}
+\multido{\Ia=3+1}{2}{\hexcellshaded{\Ia}{3}}
+\multido{\Ia=2+1}{3}{\hexcell{\Ia}{4}}
+% Coloured boundary
+\multido{\Ia=2+1}{6}{%
+ \hexcoord{\Ia}{1}
+ \rput(\xchor,\ychor){\psline[linecolor=red,linewidth=0.5mm](-0.5,-0.288675)(0,-0.577350)(0.5,-0.288675)}
+}
+%
+\hexcounter{3}{3}{red}
+\hexdot{5}{2}
+\hexdot{3}{2}
+\psset{linewidth=0.25mm}
+\hexconnect{3}{3}{4}{3}
+\hexconnect{3}{3}{4}{2}
+\hexconnect{4}{3}{5}{2}
+\hexconnect{4}{2}{5}{2}
+\hexconnect{3}{3}{3}{2}
+\endpspicture
+%\end{center}
+%
+%\begin{center}
+% Template 2.
+\psset{unit=9mm}
+\pspicture(2,0)(9,4)%\psframe(2,0)(9,4)
+\psset{linewidth=0.5mm}
+\multido{\Ia=2+1}{7}{\hexcell{\Ia}{1}}
+\multido{\Ia=3+1}{2}{\hexcellshaded{\Ia}{1}}
+\multido{\Ia=6+1}{2}{\hexcellshaded{\Ia}{1}}
+\multido{\Ia=2+1}{6}{\hexcell{\Ia}{2}}
+\multido{\Ia=3+1}{4}{\hexcellshaded{\Ia}{2}}
+\multido{\Ia=2+1}{5}{\hexcell{\Ia}{3}}
+\multido{\Ia=3+1}{3}{\hexcellshaded{\Ia}{3}}
+\multido{\Ia=2+1}{4}{\hexcell{\Ia}{4}}
+% Coloured boundary
+\multido{\Ia=2+1}{7}{%
+ \hexcoord{\Ia}{1}
+ \rput(\xchor,\ychor){\psline[linecolor=red,linewidth=0.5mm](-0.5,-0.288675)(0,-0.577350)(0.5,-0.288675)}
+}
+%
+\hexcounter{4}{3}{red}
+\hexdot{3}{2}
+\hexdot{6}{2}
+\psset{linewidth=0.25mm}
+\hexconnect{4}{3}{3}{3}\hexconnect{3}{3}{3}{2}
+\hexconnect{4}{3}{4}{2}\hexconnect{4}{2}{3}{2}
+\hexconnect{4}{3}{5}{3}\hexconnect{5}{3}{6}{2}
+\hexconnect{4}{3}{5}{2}\hexconnect{5}{2}{6}{2}
+\endpspicture
+\end{center}
+
+\begin{center}
+% Template 3.
+\psset{unit=9mm}
+\pspicture(2,0)(14,5)%\psframe(2,0)(11,5)
+\rput(13.5,3){\parbox{4cm}{Consider what happens if blue puts a piece in the hex marked ``$?$''.}}
+\psset{linewidth=0.5mm}
+\multido{\Ia=2+1}{9}{\hexcell{\Ia}{1}}
+\multido{\Ia=3+1}{7}{\hexcellshaded{\Ia}{1}}
+\multido{\Ia=2+1}{8}{\hexcell{\Ia}{2}}
+\multido{\Ia=3+1}{6}{\hexcellshaded{\Ia}{2}}
+\multido{\Ia=2+1}{7}{\hexcell{\Ia}{3}}
+\multido{\Ia=3+1}{5}{\hexcellshaded{\Ia}{3}}
+\multido{\Ia=2+1}{6}{\hexcell{\Ia}{4}}
+\multido{\Ia=4+1}{2}{\hexcellshaded{\Ia}{4}}
+\multido{\Ia=2+1}{5}{\hexcell{\Ia}{5}}
+%\multido{\Ia=2+1}{5}{\hexcell{\Ia}{6}}
+% Coloured boundary
+\multido{\Ia=2+1}{9}{%
+ \hexcoord{\Ia}{1}
+ \rput(\xchor,\ychor){\psline[linecolor=red,linewidth=0.5mm](-0.5,-0.288675)(0,-0.577350)(0.5,-0.288675)}
+}
+%
+\hexcounter{4}{4}{red}
+\hexdot{6}{3}
+\hexdot{4}{3}
+\hexcontent{6}{1}{?}
+\psset{linewidth=0.25mm}
+\hexconnect{4}{4}{5}{4}
+\hexconnect{4}{4}{5}{3}
+\hexconnect{5}{4}{6}{3}
+\hexconnect{5}{3}{6}{3}
+\hexconnect{4}{4}{4}{3}
+\endpspicture
+\end{center}
+
+\begin{center}
+% Template 4.
+\psset{unit=9mm}
+\pspicture(2,0)(12,5)%\psframe(2,0)(12,5)
+\psset{linewidth=0.5mm}
+\multido{\Ia=2+1}{10}{\hexcell{\Ia}{1}}
+\multido{\Ia=3+1}{8}{\hexcellshaded{\Ia}{1}}
+\multido{\Ia=2+1}{9}{\hexcell{\Ia}{2}}
+\multido{\Ia=3+1}{3}{\hexcellshaded{\Ia}{2}}
+\multido{\Ia=7+1}{3}{\hexcellshaded{\Ia}{2}}
+\multido{\Ia=2+1}{8}{\hexcell{\Ia}{3}}
+\multido{\Ia=3+1}{6}{\hexcellshaded{\Ia}{3}}
+\multido{\Ia=2+1}{7}{\hexcell{\Ia}{4}}
+\multido{\Ia=4+1}{3}{\hexcellshaded{\Ia}{4}}
+\multido{\Ia=2+1}{6}{\hexcell{\Ia}{5}}
+%\multido{\Ia=2+1}{5}{\hexcell{\Ia}{6}}
+% Coloured boundary
+\multido{\Ia=2+1}{10}{%
+ \hexcoord{\Ia}{1}
+ \rput(\xchor,\ychor){\psline[linecolor=red,linewidth=0.5mm](-0.5,-0.288675)(0,-0.577350)(0.5,-0.288675)}
+}
+%
+\hexcounter{5}{4}{red}
+\hexdot{7}{3}
+\hexdot{4}{3}
+\psset{linewidth=0.25mm}
+\hexconnect{5}{4}{6}{4}\hexconnect{6}{4}{7}{3}
+\hexconnect{5}{4}{6}{3}\hexconnect{6}{3}{7}{3}
+\hexconnect{5}{4}{4}{4}\hexconnect{4}{4}{4}{3}
+\hexconnect{5}{4}{5}{3}\hexconnect{5}{3}{4}{3}
+\endpspicture
+\end{center}
+
+\begin{center}
+% Double counter 1.
+\psset{unit=9mm}
+\pspicture(2,1)(10,4)%\psframe(2,0)(8,4)
+\psset{linewidth=0.5mm}
+\multido{\Ia=3+1}{5}{\hexcell{\Ia}{1}}
+\multido{\Ia=4+1}{3}{\hexcellshaded{\Ia}{1}}
+\multido{\Ia=2+1}{5}{\hexcell{\Ia}{2}}
+\multido{\Ia=3+1}{3}{\hexcellshaded{\Ia}{2}}
+\multido{\Ia=2+1}{4}{\hexcell{\Ia}{3}}
+\multido{\Ia=3+1}{2}{\hexcellshaded{\Ia}{3}}
+\multido{\Ia=2+1}{3}{\hexcell{\Ia}{4}}
+% Coloured boundary
+\multido{\Ia=3+1}{5}{%
+ \hexcoord{\Ia}{1}
+ \rput(\xchor,\ychor){\psline[linecolor=red,linewidth=0.5mm](-0.5,-0.288675)(0,-0.577350)(0.5,-0.288675)}
+}
+%
+\hexcounter{3}{3}{red}
+\hexcounter{4}{3}{red}
+\endpspicture
+%\end{center}
+%
+%\begin{center}
+% Double counter 2.
+\psset{unit=9mm}
+\pspicture(2,1)(9,4)%\psframe(2,0)(9,4)
+\psset{linewidth=0.5mm}
+\multido{\Ia=2+1}{6}{\hexcell{\Ia}{1}}
+\multido{\Ia=3+1}{4}{\hexcellshaded{\Ia}{1}}
+\multido{\Ia=2+1}{5}{\hexcell{\Ia}{2}}
+\multido{\Ia=3+1}{3}{\hexcellshaded{\Ia}{2}}
+\multido{\Ia=1+1}{5}{\hexcell{\Ia}{3}}
+\multido{\Ia=2+1}{3}{\hexcellshaded{\Ia}{3}}
+\multido{\Ia=1+1}{4}{\hexcell{\Ia}{4}}
+\multido{\Ia=2+1}{2}{\hexcellshaded{\Ia}{4}}
+% Coloured boundary
+\multido{\Ia=2+1}{6}{%
+ \hexcoord{\Ia}{1}
+ \rput(\xchor,\ychor){\psline[linecolor=red,linewidth=0.5mm](-0.5,-0.288675)(0,-0.577350)(0.5,-0.288675)}
+}
+%
+\hexcounter{2}{4}{red}
+\hexcounter{3}{4}{red}
+%\hexdot{3}{2}
+%\hexdot{6}{2}
+%\psset{linewidth=0.25mm}
+%\hexconnect{4}{3}{3}{3}\hexconnect{3}{3}{3}{2}
+%\hexconnect{4}{3}{4}{2}\hexconnect{4}{2}{3}{2}
+%\hexconnect{4}{3}{5}{3}\hexconnect{5}{3}{6}{2}
+%\hexconnect{4}{3}{5}{2}\hexconnect{5}{2}{6}{2}
+\endpspicture
+\end{center}
+
+\newpage
+
+\section*{Hex puzzles}
+
+In each of these puzzles, red to move and win.  The first three are taken from from \cite{Gardner1959}, the last is from \cite{Hein1942}.
+
+\psset{unit=7mm,linewidth=0.25mm}
+\pspicture(0,0)(5,3)
+%\psframe(0,0)(5,3)
+\hexboard{3}{0.3mm}
+\hexcounter{1}{2}{blue}
+\hexcounter{2}{3}{blue}
+\hexcounter{3}{3}{red}
+\endpspicture
+%
+\psset{unit=7mm,linewidth=0.25mm}
+\pspicture(0,0)(7,4)
+%\psframe(0,0)(7,4)
+\hexboard{4}{0.3mm}
+\hexcounter{4}{1}{blue}
+\hexcounter{1}{1}{red}
+\endpspicture
+%
+\psset{unit=7mm,linewidth=0.25mm}
+\pspicture(0,0)(9,5)
+%\psframe(0,0)(9,5)
+\hexboard{5}{0.3mm}
+\hexcounter{2}{1}{blue}
+\hexcounter{3}{2}{blue}
+\hexcounter{4}{2}{blue}
+\hexcounter{3}{1}{red}
+\hexcounter{5}{1}{red}
+\hexcounter{3}{3}{red}
+\endpspicture
+\\[5mm]
+
+\psset{unit=7mm,linewidth=0.25mm}
+\pspicture(0,0)(18,10)
+\hexboard{11}{0.3mm}
+\hexcounter{1}{4}{blue}
+\hexcounter{2}{4}{blue}
+\hexcounter{3}{4}{blue}
+\hexcounter{4}{4}{blue}
+\hexcounter{5}{4}{blue}
+\hexcounter{6}{4}{blue}
+\hexcounter{7}{4}{blue}
+\hexcounter{8}{4}{red}
+\hexcounter{9}{4}{blue}
+\hexcounter{10}{4}{blue}
+\hexcounter{11}{4}{blue}
+\hexcounter{2}{3}{red}
+\hexcounter{6}{8}{blue}
+\hexcounter{7}{8}{blue}
+\hexcounter{9}{8}{red}
+\hexcounter{4}{9}{red}
+\endpspicture
+
+More puzzles and further references are given in \cite{Browne2000}.
+
+\bibliography{sangwin,PUS,sr,pendulum,education,CAA} %%
+\newpage
+
+\subsection*{Mathematics of Hex}
+
+Hex is deeply mathematical.
+%Once you have played a few games, talk about some of the mathematical aspects of hex.
+%You might like to find out a little more about hex.  You don't need to be an expert, it is just a useful way to raise some mathematical questions.
+More information is available from
+\begin{itemize}
+  \item C.~Browne. {\em Hex Strategy: Making the Right Connections}. A K Peters/CRC Press, 2000.
+  \item C.~Browne. {\em Connection Games: Variations on a theme}. A K Peters, 2005.
+\end{itemize}
+
+Notes for hex session helpers: things to talk about.
+\begin{enumerate}
+  \item Consider the basic logic of examining positions by exhaustive cases.  E.g.~bridges and basic templates for positions.  There are lots of hex puzzles.
+  \item Compare hex with a similar game on a square board.  Can you find a stalemate position for square $3\times 3$?  For $n\times n$?
+  \item Why does hex never end in a stalemate position?  What constitutes a proof here (exhaustive cases is theoretically possible, but are you going to enumerate every game?!)  What other {\em arguments about all games} would be valid?
+  \item Who always wins Hex-$3$, playing on a $3\times 3$ board?
+  \item Should the first player always win?  There is a difference between knowing the first player wins and knowing a winning strategy.
+\end{enumerate}
+You don't need expertise in game theory to raise these questions.  The difference between being ``good at" playing hex (or playing algebra) in practice is different from understanding theoretical concepts about hex (or algebra).  This is an opportunity to try to illustrate the difference between school mathematics and the notions of proof which arise at university.
+
+The link between mathematics and games has a long and distinguished history.  More information can be found in
+\begin{enumerate}
+  \item D.~Wells.  {\em Games and Mathematics: Subtle Connections}.  Cambridge University Press, 2012.
+  \item E.~R.~Berlekamp, J.~H.~Conway, and R.~K.~Guy.  {\em Winning Ways for your Mathematical Plays} (2 vols). Academic Press, 1982.
+\end{enumerate}
+
+%\cite{Gale1979}
+
+Remember:
+\begin{quote}
+    {\em the best mutual opponents are the ones having the most fun.}
+\end{quote}
+\vfill
+{{\tiny\sf \copyright\ Chris Sangwin \today}}%
+
+
+
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+
+\section*{Guidance for student helpers}
+
+Mathematical games are fun, but also enable us to introduce and address some deep mathematical questions.
+%
+These notes are designed to guide you in getting the most out of playing hex with novices.
+
+\subsection*{Engaging people}
+
+The purpose of the game is to {\em engage people}.  The purpose is not (initially) to win!
+\begin{quote}
+    {\em Nurture worthy opponents.}
+\end{quote}
+Talk with your opponent about the game, and about mathematics in general.  Games are usually competitive, so do your best to make them feel relaxed.
+\begin{enumerate}
+  \item Actively ask people to play.  ``Do you know about Hex?  Why don't we play a couple of games?"  (Compare with ``would you like to play?" to which the obvious answer is ``no thanks!")
+  \item Explain all your moves, and why you are making them.  E.g.~bridges.   This is a perfect knowledge game so you have nothing to hide anyway.  Relying on an opponent to miss a decisive next move is a short term strategy to success.
+  \item Read the {\em basic strategy} notes on the hex board. As you play the first few games, introduce these points to your opponent through examples.
+  \item Review games, e.g. ``which move was the turning point?"
+  \item Ask your opponent why they have played a move and tactfully point out possible replies to very weak moves.
+  \item Hex is very unforgiving of a single mistake.  Occasionally let opponents retract their move if it leads to a {\em better game}.
+\end{enumerate}
+
+The empty yellow hexes below form a {\em template}.  Red can secure a connection to the red boundary in one move, and blue cannot prevent this happening.
+\begin{center}
+q\psset{unit=9mm,linewidth=0.3mm}
+\pspicture(2,0)(8,4)
+% Template 1.
+\multido{\Ia=2+1}{6}{\hexcell{\Ia}{1}}
+\multido{\Ia=3+1}{4}{\hexcellshaded{\Ia}{1}}
+\multido{\Ia=2+1}{5}{\hexcell{\Ia}{2}}
+\multido{\Ia=3+1}{3}{\hexcellshaded{\Ia}{2}}
+\multido{\Ia=2+1}{4}{\hexcell{\Ia}{3}}
+\multido{\Ia=3+1}{2}{\hexcellshaded{\Ia}{3}}
+\multido{\Ia=2+1}{3}{\hexcell{\Ia}{4}}
+% Coloured boundary
+\multido{\Ia=2+1}{6}{%
+ \hexcoord{\Ia}{1}
+ \rput(\xchor,\ychor){\psline[linecolor=red,linewidth=0.5mm](-0.5,-0.288675)(0,-0.577350)(0.5,-0.288675)}
+}
+%
+\hexcounter{3}{3}{red}
+\hexdot{5}{2}
+\hexconnect{3}{3}{4}{3}
+\hexconnect{3}{3}{4}{2}
+\hexconnect{4}{3}{5}{2}
+\hexconnect{4}{2}{5}{2}
+\hexdot{3}{2}
+\hexconnect{3}{3}{3}{2}
+\endpspicture
+\end{center}
+I call this the ``2-3-4" template.  The bridge is the simplest form of template.  Experience playing hex builds up a repertoire of similar positions.  The player needs to remember and recognise them.  It also helps to point these out to new players, giving some structure to the process of learning hex.
+
+\section*{Other games}
+
+\subsection*{Susan}
+
+% http://www.stephen.com/sue/sue_man.txt
+
+Susan is played on a hex-hex board with sides of length 5, or length 6.
+
+Players each choose colours and decide who goes first.  On each turn you can place a counter in any empty hex, or slide one of your existing counters to any
+neighboring empty space.   You can not pass your turn.
+
+If both players each slide three turns in a row then the game is a draw.
+
+The object of the game is to surround any of your opponent's counters. You surround a counter by filling in the spaces around it by any combination of your counters, your opponent's counters and the edge of the board.  If one of your counters is surrounded on your own turn then you lose the game even if you surround one of your opponent's counters at the same time.
+
+\end{document}
+
