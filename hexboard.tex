@@ -733,28 +733,26 @@
     \begin{verbatim}\definecolor{lavendermist}{rgb}{0.9, 0.9, 0.98}
 \definecolor{lavenderpink}{rgb}{0.98, 0.68, 0.82}
 \definecolor{lavenderpurple}{rgb}{0.59, 0.48, 0.71}
-\usetikzlibrary{fadings}
 \begin{hexpicture}
     \hexboard{5}
     \hexcoord{c}{2}
     \node (n1) at (\xchor em,\ychor em) {};
     \hexcoord{d}{4}
     \node (n2) at (\xchor em,\ychor em) {};
-    \draw[ultra thick,lavenderpink,fill=lavenderpurple,postaction={path fading=north,
-    fading angle=-45,fill=lavendermist}] (n1) rectangle (n2);
+    \draw[ultra thick,lavenderpink,left color=lavenderpurple,right
+    color=lavendermist] (n1) rectangle (n2);
 \end{hexpicture}\end{verbatim}
     
     \definecolor{lavendermist}{rgb}{0.9, 0.9, 0.98}
     \definecolor{lavenderpink}{rgb}{0.98, 0.68, 0.82}
     \definecolor{lavenderpurple}{rgb}{0.59, 0.48, 0.71}
-    \usetikzlibrary{fadings}
     \begin{hexpicture}
         \hexboard{5}
         \hexcoord{c}{2}
         \node (n1) at (\xchor em,\ychor em) {};
         \hexcoord{d}{4}
         \node (n2) at (\xchor em,\ychor em) {};
-        \draw[ultra thick,lavenderpink,fill=lavenderpurple,postaction={path fading=north,fading angle=-45,fill=lavendermist}] (n1) rectangle (n2);
+        \draw[ultra thick,lavenderpink,left color=lavenderpurple,right color=lavendermist] (n1) rectangle (n2);
     \end{hexpicture}
     
     \subsection{Internal}
