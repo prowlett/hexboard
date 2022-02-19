@@ -1,0 +1,1680 @@
+%\iffalse meta-comment
+%Copyright (c) 2022 Peter Rowlett and Chris Sangwin
+%
+%The package is licenced under Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0). To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/4.0/
+%\fi
+%\title{\textsf{hexboard} v1.0}
+%\author{Peter Rowlett and Chris Sangwin}
+%\maketitle
+%    
+%\begin{center}
+%    \hexscale{3}
+%    \begin{hexgame}[4]
+%        \hexcellshaded{b}{3}
+%        \hexmove{b}{2}
+%        \hexmove{b}{1}
+%        \hexmove{c}{1}
+%        \hexmove{d}{1}
+%        \hexmove{a}{2}
+%        \hexmove{b}{3}
+%        \hexmove{b}{4}
+%        \hexmove{c}{3}
+%        \hexmove{d}{3}
+%        \hexdot{a}{4}
+%        \hexdot{a}{3}
+%        \hexconnect{b}{3}{a}{3}
+%        \hexconnect{b}{3}{a}{4}
+%        \hexcontent{d}{2}{\(\star\)}
+%    \end{hexgame}
+%    \hexscale{2}
+%\end{center}
+%
+%The package is licenced under Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0). To view a copy of this license, visit \url{http://creativecommons.org/licenses/by-sa/4.0/}
+%
+%\tableofcontents
+%
+%\section{Background}
+%
+%\verb|hexboards| is a package for \LaTeX\ (that should also work with Lua\LaTeX\ and Xe\TeX) that provides functionality for drawing Hex boards and games. The aim is a clean, clear design with flexibility for drawing different sorts of Hex diagrams. 
+%
+%\section{Usage notes}
+%
+%\subsection{The game Hex}
+%
+%In this document it is assumed you know how Hex is played. The players are referred to as A (playing between bottom and top) and B (playing between left and right).
+%
+%\subsection{hexpicture}
+%
+%Hex boards are drawn inside an environment called \verb|hexpicture|. The basic structure for drawing with this package is 
+%
+%\begin{verbatim}\begin{hexpicture}
+%...
+%\end{hexpicture}\end{verbatim}
+%
+%\subsection{Coordinate labels}
+%
+%Various commands use coordinates on the hexagonal board as a pair \verb|{x}{y}| using column \verb|x| and row \verb|y|. In this, the column \verb|x| may be specified either as a number or using the column letter. For example, the following two commands are equivalent. 
+%
+%\begin{verbatim}\hexmove{d}{1}
+%\hexmove{4}{1}\end{verbatim}
+%
+%In this document, letters are used to match the board labels.
+%
+%Note that this does not apply to the size of a board, where both dimensions are given as numbers. For example, you ask for a 5 by 7 board, not an e by 7 board.
+%
+%\subsection{Order of commands}
+%
+%New elements are placed on top of the diagram, so some care should be taken that elements do not obscure each other by placing the command for the bottom element first. This includes counters, shaded cells, dots and lines.
+%
+%For example, it is best to draw shaded cells early so that they appear behind other elements. For example, the counter is hidden here:
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexboard{4}
+%\hexcounter{b}{2}{B}
+%\hexcellshaded{b}{2}
+%\hexcellshaded{c}{3}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexboard{4}
+%    \hexcounter{b}{2}{B}
+%    \hexcellshaded{b}{2}
+%    \hexcellshaded{c}{3}
+%\end{hexpicture}
+%
+%Whereas the hidden counter appears if the commands are reordered:
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexboard{4}
+%\hexcellshaded{b}{2}
+%\hexcellshaded{c}{3}
+%\hexcounter{b}{2}{B}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexboard{4}
+%    \hexcellshaded{b}{2}
+%    \hexcellshaded{c}{3}
+%    \hexcounter{b}{2}{B}
+%\end{hexpicture}
+%
+%Indeed, if cells at the edge of the board are to be shaded, do this before drawing the board otherwise the shading will cover the edge border. (On the game board, unshaded cells are transparent.)
+%
+%For example, if this happens:
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexboard{5}
+%\hexshadedsubrow{b}{e}{1}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexboard{5}
+%    \hexshadedsubrow{b}{e}{1}
+%\end{hexpicture}
+%
+%try this instead:
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexshadedsubrow{b}{e}{1}
+%\hexboard{5}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexshadedsubrow{b}{e}{1}
+%    \hexboard{5}
+%\end{hexpicture}
+%
+%
+%\section{Basic usage}
+%
+%\subsection{Drawing Hex boards}
+%
+%The basic usage is via \verb|\hexboard{num}| which draws a Hex board of size \verb|num| by \verb|num|. For example, the command
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexboard{11}
+%\end{hexpicture}\end{verbatim}
+%
+%Produces a Hex board like this\\
+%
+%\begin{hexpicture}
+%    \hexboard{11}
+%\end{hexpicture}
+%
+%\subsection{Drawing Hex games}
+%
+%The environments \verb|hexgame| and \verb|hexgamelabels| are used to draw Hex games. These starts a \verb|hexpicture| and also initialise a counter to keep track of moves. The difference is that \verb|hexgamelabels| draws a number on each counter to indicate the order in which pieces were played. 
+%
+%An optional parameter controls the size of the board, with default 11. 
+%
+%Within a \verb|hexgame| or \verb|hexgamelabels|, game moves are indicated in the order they are played by \verb|\hexmove{x}{y}|. The colouring of pieces is handled by the counter, so odd-numbered moves are player A and even-numbered moves are player B.
+%
+%For example, here is a Hex game on a 4 by 4 board without labelling using \verb|hexgame|:
+%
+%\begin{verbatim}\begin{hexgame}[4]
+%\hexmove{a}{2}
+%\hexmove{c}{3}
+%\hexmove{b}{2}
+%\hexmove{c}{2}
+%\hexmove{c}{1}
+%\hexmove{d}{1}
+%\hexmove{b}{3}
+%\hexmove{b}{4}
+%\hexmove{a}{4}
+%\end{hexgame}\end{verbatim}
+%
+%\begin{hexgame}[4]
+%    \hexmove{a}{2}
+%    \hexmove{c}{3}
+%    \hexmove{b}{2}
+%    \hexmove{c}{2}
+%    \hexmove{c}{1}
+%    \hexmove{d}{1}
+%    \hexmove{b}{3}
+%    \hexmove{b}{4}
+%    \hexmove{a}{4}
+%\end{hexgame}
+%
+%Here is a Hex game on a 5 by 5 board with move labelling using \verb|hexgamelabels|:
+%
+%\begin{verbatim}\begin{hexgamelabels}[5]
+%\hexmove{c}{2}
+%\hexmove{b}{4}
+%\hexmove{b}{3}
+%\hexmove{d}{3}
+%\hexmove{a}{5}
+%\hexmove{a}{4}
+%\hexmove{c}{3}
+%\hexmove{c}{4}
+%\hexmove{e}{3}
+%\hexmove{e}{2}
+%\end{hexgamelabels}\end{verbatim}
+%
+%\begin{hexgamelabels}[5]
+%    \hexmove{c}{2}
+%    \hexmove{b}{4}
+%    \hexmove{b}{3}
+%    \hexmove{d}{3}
+%    \hexmove{a}{5}
+%    \hexmove{a}{4}
+%    \hexmove{c}{3}
+%    \hexmove{c}{4}
+%    \hexmove{e}{3}
+%    \hexmove{e}{2}
+%\end{hexgamelabels}
+%
+%By default, player A moves first. A command \verb|\hexskipmove| is used to increment the move counter without placing a piece, which can be used to skip player A's first move if player B is to move first (including, for example, if the swap rule has been used but you wish to maintain labelling that shows the order in which pieces were placed). 
+%
+%\begin{verbatim}\begin{hexgamelabels}[4]
+%\hexskipmove
+%\hexmove{b}{3}
+%\hexmove{c}{3}
+%\hexmove{c}{2}
+%\end{hexgamelabels}\end{verbatim}
+%
+%\begin{hexgamelabels}[4]
+%    \hexskipmove
+%    \hexmove{b}{3}
+%    \hexmove{c}{3}
+%    \hexmove{c}{2}
+%\end{hexgamelabels}
+%
+%\subsection{Placing Hex counters}
+%
+%Within a \verb|hexpicture|, individual counters can be placed using \verb|\hexcounter{x}{y}{player}|. 
+%
+%For example,
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexboard{5}
+%\hexcounter{b}{1}{B}
+%\hexcounter{c}{2}{B}
+%\hexcounter{d}{2}{B}
+%\hexcounter{c}{1}{A}
+%\hexcounter{e}{1}{A}
+%\hexcounter{c}{3}{A}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexboard{5}
+%    \hexcounter{b}{1}{B}
+%    \hexcounter{c}{2}{B}
+%    \hexcounter{d}{2}{B}
+%    \hexcounter{c}{1}{A}
+%    \hexcounter{e}{1}{A}
+%    \hexcounter{c}{3}{A}
+%\end{hexpicture}
+%
+%\subsection{Drawing a shaded cell}
+%
+%The command \verb|\hexcellshaded{x}{y}| is used to draw a shaded cell. 
+%
+%For example
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexboard{4}
+%\hexcellshaded{b}{2}
+%\hexcellshaded{c}{3}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexboard{4}
+%    \hexcellshaded{b}{2}
+%    \hexcellshaded{c}{3}
+%\end{hexpicture}
+%
+%The default shading colour is yellow. An optional parameter allows you to change this. For example
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexboard{4}
+%\hexcellshaded{b}{2}
+%\hexcellshaded{c}{3}
+%\hexcellshaded[magenta]{c}{2}
+%\hexcellshaded[lime]{b}{3}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexboard{4}
+%    \hexcellshaded{b}{2}
+%    \hexcellshaded{c}{3}
+%    \hexcellshaded[magenta]{c}{2}
+%    \hexcellshaded[lime]{b}{3}
+%\end{hexpicture}
+%
+%\subsection{Drawing a small dot}
+%
+%To indicate a position on the board using a small dot, use \verb|\hexdot{x}{y}|. 
+%
+%For example
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexboard{4}
+%\hexdot{b}{2}
+%\hexdot{c}{3}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexboard{4}
+%    \hexdot{b}{2}
+%    \hexdot{c}{3}
+%\end{hexpicture}
+%
+%\subsection{Drawing lines}
+%
+%The command \verb|\hexconnect{x1}{y1}{x2}{y2}| draws a line from cell (\verb|x1|,\verb|y1|) to cell (\verb|x2|,\verb|y2|).
+%
+%For example
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexboard{3}
+%\hexcounter{b}{1}{A}
+%\hexconnect{b}{1}{b}{2}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexboard{3}
+%    \hexcounter{b}{1}{A}
+%    \hexconnect{b}{1}{b}{2}
+%\end{hexpicture}
+%
+%\subsection{Putting text or other content in a cell}
+%
+%The command \verb|\hexcontent{x}{y}{content}| puts \verb|content| into cell (\verb|x|,\verb|y|). 
+%
+%For example, here we write ``b2'' in cell b2.
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexboard{3}
+%\hexcontent{b}{2}{b2}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexboard{3}
+%    \hexcontent{b}{2}{b2}
+%\end{hexpicture}
+%
+%By default, the text is \verb|\scriptsize| (and then scaled by \verb|\hexscale|, see \ref{scaling}). This can be overridden. 
+%
+%For example
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexboard{3}
+%\hexcontent{b}{2}{\tiny here}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexboard{3}
+%    \hexcontent{b}{2}{\tiny here}
+%\end{hexpicture}
+%
+%The \verb|content| can contain other \LaTeX\ commands. For example
+%
+%\begin{verbatim}\usepackage{rotating}
+%...
+%\begin{hexpicture}
+%\hexboard{9}
+%\hexcontent{e}{5}{\begin{turn}{30}
+%\colorbox{lightgray}{\color{blue}{\normalsize \textbf{Fancy a game?}}}
+%\end{turn}}
+%\end{hexpicture}\end{verbatim}
+%
+%
+%\begin{hexpicture}
+%    \hexboard{9}
+%    \hexcontent{e}{5}{\begin{turn}{30}
+%            \colorbox{lightgray}{\color{blue}{\normalsize \textbf{Fancy a game?}}}
+%    \end{turn}}
+%\end{hexpicture}
+%
+%\section{User configuration}
+%
+%\subsection{Scaling images}\label{scaling}
+%
+%The basic unit of the diagrams can be scaled using \verb|\hexscale{number}|. The default is 2. 
+%
+%For example \verb|\hexscale{8}| changes this\\
+%
+%\begin{hexpicture}
+%    \hexcell{a}{1}
+%    \hexcellshaded{b}{1}
+%    \hexcellshaded{a}{2}
+%    \hexcell{b}{2}
+%    \hexcounter{a}{1}{A}
+%    \hexcounter{b}{2}{A}
+%    \hexdot{a}{2}
+%    \hexdot{b}{1}
+%    \hexconnect{a}{1}{a}{2}
+%    \hexconnect{a}{1}{b}{1}
+%    \hexconnect{a}{2}{b}{2}
+%    \hexconnect{b}{1}{b}{2}
+%\end{hexpicture}
+%
+%into this\\
+%
+%\hexscale{8}
+%\begin{hexpicture}
+%    \hexcell{a}{1}
+%    \hexcellshaded{b}{1}
+%    \hexcellshaded{a}{2}
+%    \hexcell{b}{2}
+%    \hexcounter{a}{1}{A}
+%    \hexcounter{b}{2}{A}
+%    \hexdot{a}{2}
+%    \hexdot{b}{1}
+%    \hexconnect{a}{1}{a}{2}
+%    \hexconnect{a}{1}{b}{1}
+%    \hexconnect{a}{2}{b}{2}
+%    \hexconnect{b}{1}{b}{2}
+%\end{hexpicture}\\
+%
+%Fractional values are possible. For example
+%
+%\begin{verbatim}\hexscale{0.5}
+%\begin{hexpicture}
+%\hexboard{2}
+%\hexcounter{a}{1}{A}
+%\hexcounter{b}{2}{B}
+%\end{hexpicture}\end{verbatim}
+%
+%\hexscale{0.5}
+%\begin{hexpicture}
+%    \hexboard{2}
+%    \hexcounter{a}{1}{A}
+%    \hexcounter{b}{2}{B}
+%\end{hexpicture}
+%
+%and
+%
+%\begin{verbatim}\hexscale{3.5}
+%\begin{hexpicture}
+%\hexboard{2}
+%\hexcounter{a}{1}{A}
+%\hexcounter{b}{2}{B}
+%\end{hexpicture}\end{verbatim}
+%
+%\hexscale{3.5}
+%\begin{hexpicture}
+%    \hexboard{2}
+%    \hexcounter{a}{1}{A}
+%    \hexcounter{b}{2}{B}
+%\end{hexpicture}
+%
+%\hexscale{2}
+%
+%\subsection{Colours}
+%
+%Player A's colour can be set using \verb|\setcolorA{color}| and player B's colour can be set using \verb|\setcolorB{color}|. The defaults are \verb|red| for player A and \verb|blue| for player B.
+%
+%For example, for a greyscale diagram use
+%
+%\begin{verbatim}\setcolorA{lightgray}
+%\setcolorB{darkgray}\end{verbatim}
+%
+%This changes this\\
+%
+%\begin{hexpicture}
+%    \hexboard{3}
+%    \hexcounter{a}{2}{B}
+%    \hexcounter{b}{3}{B}
+%    \hexcounter{c}{3}{A}
+%\end{hexpicture}
+%
+%into this\\
+%
+%\setcolorA{lightgray}
+%\setcolorB{darkgray}
+%\begin{hexpicture}
+%    \hexboard{3}
+%    \hexcounter{a}{2}{B}
+%    \hexcounter{b}{3}{B}
+%    \hexcounter{c}{3}{A}
+%\end{hexpicture}
+%\setcolorA{red}
+%\setcolorB{blue}
+%
+%To use the current user colours elsewhere in the document, access these as \verb|\colorA| and \verb|\colorB|. For example
+%
+%\begin{verbatim}
+%{\color{\colorA} This text is player A's colour} and 
+%{\color{\colorB} This text is player B's colour}.
+%
+%\setcolorA{teal}
+%\setcolorB{magenta}
+%{\color{\colorA} This text is player A's colour} and 
+%{\color{\colorB} This text is player B's colour}.
+%\end{verbatim}
+%
+%{\color{\colorA} This text is player A's colour} and 
+%{\color{\colorB} This text is player B's colour}.
+%
+%\setcolorA{teal}
+%\setcolorB{magenta}
+%{\color{\colorA} This text is player A's colour} and 
+%{\color{\colorB} This text is player B's colour}.
+%\setcolorA{red}
+%\setcolorB{blue}
+%
+%
+%\section{Advanced use}
+%
+%\subsection{Drawing an irregular board}
+%
+%The command \verb|\hexgrid{columns}{rows}| is used to draw a grid of that size. In fact, the command \verb|\hexboard| is provided for convenience and simply calls \verb|\hexgrid| with the same number of \verb|rows| and \verb|columns|.
+%
+%For example
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexgrid{9}{5}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexgrid{9}{5}
+%\end{hexpicture}
+%
+%\subsection{Drawing a board with no edge labels}
+%
+%The command \verb|\hexgridnolabel{columns}{rows}| is used to draw a grid of that size without edge labels.
+%
+%For example
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexgridnolabel{9}{5}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexgridnolabel{9}{5}
+%\end{hexpicture}
+%
+%
+%\subsection{Drawing a single cell}
+%
+%An individual cell is drawn using \verb|\hexcell{x}{y}|. 
+%
+%For example
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexcell{a}{1}
+%\hexcell{b}{1}
+%\hexcell{b}{2}
+%\hexcell{c}{4}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexcell{a}{1}
+%    \hexcell{b}{1}
+%    \hexcell{b}{2}
+%    \hexcell{c}{4}
+%\end{hexpicture}
+%
+%\subsection{Drawing a sub-row}
+%
+%The command \verb|\hexsubrow{start}{end}{row}| draws a partial row of cells from column \verb|start| to column \verb|end| on row \verb|row|.
+%
+%For example
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexsubrow{b}{f}{1}
+%\hexsubrow{a}{e}{2}
+%\hexsubrow{a}{b}{3}
+%\hexsubrow{d}{e}{3}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexsubrow{b}{f}{1}
+%    \hexsubrow{a}{e}{2}
+%    \hexsubrow{a}{b}{3}
+%    \hexsubrow{d}{e}{3}
+%\end{hexpicture}
+%
+%\subsection{Shading a sub-row}
+%
+%The command \verb|\hexshadedsubrow{start}{end}{row}| draws a partial row of shaded cells from column \verb|start| to column \verb|end| on row \verb|row|.
+%
+%For example
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexgrid{6}{4}
+%\hexshadedsubrow{b}{d}{2}
+%\hexshadedsubrow{c}{e}{3}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexgrid{6}{4}
+%    \hexshadedsubrow{b}{d}{2}
+%    \hexshadedsubrow{c}{e}{3}
+%\end{hexpicture}
+%
+%\subsection{Drawing a partial bottom border}
+%
+%The command \verb|\hexbottomsubborder{start}{end}| draws a bottom border from column \verb|start| to column \verb|end|.
+%
+%For example
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexsubrow{b}{f}{1}
+%\hexsubrow{a}{e}{2}
+%\hexsubrow{a}{d}{3}
+%\hexbottomsubborder{b}{f}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexsubrow{b}{f}{1}
+%    \hexsubrow{a}{e}{2}
+%    \hexsubrow{a}{d}{3}
+%    \hexbottomsubborder{b}{f}
+%\end{hexpicture}
+%
+%\subsection{Drawing a reducing part-board}
+%
+%The command \verb|\hexreducing{columns}{rows}| draws a grid with a bottom border only that starts at \verb|columns| wide but decreases width by 1 each row until it has drawn \verb|rows| rows. 
+%
+%For example
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexreducing{6}{3}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexreducing{6}{3}
+%\end{hexpicture}
+%
+%You can also draw a reducing board without a bottom coloured border using\\
+%\verb|\hexreducingnoborder{columns}{rows}|.
+%
+%For example
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexreducingnoborder{5}{4}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexreducingnoborder{5}{4}
+%\end{hexpicture}
+%
+%\subsection{A note about board size}
+%
+%A 1 by 1 Hex board is possible.
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexboard{1}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexboard{1}
+%\end{hexpicture}\\
+%
+%By extension, irregular boards which are a single column or row are possible.
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexgrid{1}{4}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexgrid{1}{4}
+%\end{hexpicture}
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexgrid{7}{1}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexgrid{7}{1}
+%\end{hexpicture}
+%
+%Theoretically there is no maximum size of the board, though note the board will happily move beyond the size of the paper, and references to cells beyond column \verb|z| are by number only, both when referring to coordinates and in the bottom edge labels.
+%
+%For example
+%
+%\begin{verbatim}\hexscale{1.4}
+%\begin{hexpicture}
+%\hexgrid{27}{4}
+%\hexcounter{z}{4}{A}
+%\hexcounter{27}{4}{B}
+%\end{hexpicture}\end{verbatim}
+%
+%\hexscale{1.4}
+%\begin{hexpicture}
+%    \hexgrid{27}{4}
+%    \hexcounter{z}{4}{A}
+%    \hexcounter{27}{4}{B}
+%\end{hexpicture}
+%
+%\hexscale{2}
+%
+%\subsection{Use with tikz}
+%
+%The package uses tikz and \verb|\usetikzlibrary{shapes.geometric}|. The definition of \verb|hexpicture| (also used by \verb|hexgame|) is 
+%
+%\verb|\newenvironment{hexpicture}{\begin{tikzpicture}[hex]}{\end{tikzpicture}}|
+%
+%In theory, then, any tikz commands that will work in this context can be used. 
+%
+%Note that the diagrams were made based around one cell being 1em across. This leads to quite small diagrams, hence the default for \verb|\hexscale| being set to \verb|2|. This means that it is best to give tikz commands in ems, and has unfortunate consequences for example on text size. In the following example, the label is positioned using \verb|(14em,3em)| and the text is \verb|\tiny| for this reason.
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexshadedsubrow{b}{h}{1}
+%\hexshadedsubrow{b}{g}{2}
+%\hexshadedsubrow{b}{f}{3}
+%\hexshadedsubrow{c}{d}{4}
+%\hexreducing{9}{5}
+%\hexcounter{c}{4}{A}
+%\hexdot{c}{3}
+%\hexdot{e}{3}
+%\hexconnect{c}{4}{c}{3}
+%\hexconnect{c}{4}{d}{3}
+%\hexconnect{d}{3}{e}{3}
+%\hexconnect{c}{4}{d}{4}
+%\hexconnect{d}{4}{e}{3}
+%\hexcontent{e}{1}{?}
+%\node at (14em,3em) {\parbox{5em}{\tiny Consider what happens if blue puts a 
+%piece in the hex marked ``?''.}};
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexshadedsubrow{b}{h}{1}
+%    \hexshadedsubrow{b}{g}{2}
+%    \hexshadedsubrow{b}{f}{3}
+%    \hexshadedsubrow{c}{d}{4}
+%    \hexreducing{9}{5}
+%    \hexcounter{c}{4}{A}
+%    \hexdot{c}{3}
+%    \hexdot{e}{3}
+%    \hexconnect{c}{4}{c}{3}
+%    \hexconnect{c}{4}{d}{3}
+%    \hexconnect{d}{3}{e}{3}
+%    \hexconnect{c}{4}{d}{4}
+%    \hexconnect{d}{4}{e}{3}
+%    \hexcontent{e}{1}{?}
+%    \node at (14em,3em) {\parbox{5em}{\tiny Consider what happens if blue puts a piece in the hex marked ``?''.}};
+%\end{hexpicture}\\
+%
+%If you wish to draw tikz items relative to the grid, it may be useful to know that the centre of any cell on the grid can be determined using \verb|\hexcoord{x}{y}|. This command sets \verb|\xchor| and \verb|\ychor| to be the centre of the cell at (\verb|x|,\verb|y|), then these coordinates can be used in further commands. 
+%
+%So if you for some reason wanted a pinkish-purple box aligned with certain cells of your Hex grid, you could do this. 
+%
+%\begin{verbatim}\definecolor{lavendermist}{rgb}{0.9, 0.9, 0.98}
+%\definecolor{lavenderpink}{rgb}{0.98, 0.68, 0.82}
+%\definecolor{lavenderpurple}{rgb}{0.59, 0.48, 0.71}
+%\begin{hexpicture}
+%\hexboard{5}
+%\hexcoord{c}{2}
+%\node (n1) at (\xchor em,\ychor em) {};
+%\hexcoord{d}{4}
+%\node (n2) at (\xchor em,\ychor em) {};
+%\draw[ultra thick,lavenderpink,left color=lavenderpurple,right
+%color=lavendermist] (n1) rectangle (n2);
+%\end{hexpicture}\end{verbatim}
+%
+%\definecolor{lavendermist}{rgb}{0.9, 0.9, 0.98}
+%\definecolor{lavenderpink}{rgb}{0.98, 0.68, 0.82}
+%\definecolor{lavenderpurple}{rgb}{0.59, 0.48, 0.71}
+%\begin{hexpicture}
+%    \hexboard{5}
+%    \hexcoord{c}{2}
+%    \node (n1) at (\xchor em,\ychor em) {};
+%    \hexcoord{d}{4}
+%    \node (n2) at (\xchor em,\ychor em) {};
+%    \draw[ultra thick,lavenderpink,left color=lavenderpurple,right color=lavendermist] (n1) rectangle (n2);
+%\end{hexpicture}
+%
+%\subsection{Internal}
+%
+%Various internal commands are used:
+%
+%\verb|hexedge| (counter)
+%
+%\verb|hexmovecount| (counter)
+%
+%\verb|\xchor|
+%
+%\verb|\ychor|
+%
+%\verb|\colorA|
+%
+%\verb|\colorB|
+%
+%\verb|\hexlinewidth|
+%
+%\verb|\hexedgewidth|
+%
+%\verb|\hexthinline|
+%
+%\verb|\hexcoord|
+%
+%\verb|\hexsize|
+%
+%\verb|\Ia|
+%
+%\verb|\Ib|
+%
+%\verb|\Iaend|
+%
+%\verb|\leftofIa|
+%
+%\verb|\belowIa|
+%
+%\verb|\leftofxchor|
+%
+%\section{Some examples}
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexcell{a}{1}
+%\hexcellshaded{b}{1}
+%\hexcellshaded{a}{2}
+%\hexcell{b}{2}
+%\hexcounter{a}{1}{A}
+%\hexcounter{b}{2}{A}
+%\hexdot{a}{2}
+%\hexdot{b}{1}
+%\hexconnect{a}{1}{a}{2}
+%\hexconnect{a}{1}{b}{1}
+%\hexconnect{a}{2}{b}{2}
+%\hexconnect{b}{1}{b}{2}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexcell{a}{1}
+%    \hexcellshaded{b}{1}
+%    \hexcellshaded{a}{2}
+%    \hexcell{b}{2}
+%    \hexcounter{a}{1}{A}
+%    \hexcounter{b}{2}{A}
+%    \hexdot{a}{2}
+%    \hexdot{b}{1}
+%    \hexconnect{a}{1}{a}{2}
+%    \hexconnect{a}{1}{b}{1}
+%    \hexconnect{a}{2}{b}{2}
+%    \hexconnect{b}{1}{b}{2}
+%\end{hexpicture}
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexshadedsubrow{b}{c}{1}
+%\hexreducing{4}{2}
+%\hexcounter{b}{2}{A}
+%\hexdot{b}{1}
+%\hexdot{c}{1}
+%\hexconnect{b}{2}{b}{1}
+%\hexconnect{b}{2}{c}{1}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexshadedsubrow{b}{c}{1}
+%    \hexreducing{4}{2}
+%    \hexcounter{b}{2}{A}
+%    \hexdot{b}{1}
+%    \hexdot{c}{1}
+%    \hexconnect{b}{2}{b}{1}
+%    \hexconnect{b}{2}{c}{1}
+%\end{hexpicture}
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexshadedsubrow{b}{e}{1}
+%\hexshadedsubrow{b}{d}{2}
+%\hexshadedsubrow{b}{c}{3}
+%\hexreducing{6}{4}
+%\hexcounter{b}{3}{A}
+%\hexdot{b}{2}
+%\hexdot{d}{2}
+%\hexconnect{b}{3}{b}{2}
+%\hexconnect{b}{3}{c}{2}
+%\hexconnect{c}{2}{d}{2}
+%\hexconnect{b}{3}{c}{3}
+%\hexconnect{c}{3}{d}{2}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexshadedsubrow{b}{e}{1}
+%    \hexshadedsubrow{b}{d}{2}
+%    \hexshadedsubrow{b}{c}{3}
+%    \hexreducing{6}{4}
+%    \hexcounter{b}{3}{A}
+%    \hexdot{b}{2}
+%    \hexdot{d}{2}
+%    \hexconnect{b}{3}{b}{2}
+%    \hexconnect{b}{3}{c}{2}
+%    \hexconnect{c}{2}{d}{2}
+%    \hexconnect{b}{3}{c}{3}
+%    \hexconnect{c}{3}{d}{2}
+%\end{hexpicture}
+%
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexshadedsubrow{b}{c}{1}
+%\hexshadedsubrow{e}{f}{1}
+%\hexshadedsubrow{b}{e}{2}
+%\hexshadedsubrow{b}{d}{3}
+%\hexreducing{7}{4}
+%\hexcounter{c}{3}{A}
+%\hexdot{b}{2}
+%\hexdot{e}{2}
+%\hexconnect{b}{2}{c}{2}
+%\hexconnect{b}{3}{b}{2}
+%\hexconnect{c}{3}{b}{3}
+%\hexconnect{c}{3}{c}{2}
+%\hexconnect{c}{3}{d}{2}
+%\hexconnect{d}{2}{e}{2}
+%\hexconnect{c}{3}{d}{3}
+%\hexconnect{d}{3}{e}{2}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexshadedsubrow{b}{c}{1}
+%    \hexshadedsubrow{e}{f}{1}
+%    \hexshadedsubrow{b}{e}{2}
+%    \hexshadedsubrow{b}{d}{3}
+%    \hexreducing{7}{4}
+%    \hexcounter{c}{3}{A}
+%    \hexdot{b}{2}
+%    \hexdot{e}{2}
+%    \hexconnect{b}{2}{c}{2}
+%    \hexconnect{b}{3}{b}{2}
+%    \hexconnect{c}{3}{b}{3}
+%    \hexconnect{c}{3}{c}{2}
+%    \hexconnect{c}{3}{d}{2}
+%    \hexconnect{d}{2}{e}{2}
+%    \hexconnect{c}{3}{d}{3}
+%    \hexconnect{d}{3}{e}{2}
+%\end{hexpicture}
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexshadedsubrow{b}{i}{1}
+%\hexshadedsubrow{b}{d}{2}
+%\hexshadedsubrow{f}{h}{2}
+%\hexshadedsubrow{b}{g}{3}
+%\hexshadedsubrow{c}{e}{4}
+%\hexreducing{10}{5}
+%\hexcounter{d}{4}{A}
+%\hexdot{c}{3}
+%\hexdot{f}{3}
+%\hexconnect{c}{3}{d}{3}
+%\hexconnect{c}{4}{c}{3}
+%\hexconnect{d}{4}{c}{4}
+%\hexconnect{d}{4}{d}{3}
+%\hexconnect{d}{4}{e}{3}
+%\hexconnect{e}{3}{f}{3}
+%\hexconnect{d}{4}{e}{4}
+%\hexconnect{e}{4}{f}{3}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexshadedsubrow{b}{i}{1}
+%    \hexshadedsubrow{b}{d}{2}
+%    \hexshadedsubrow{f}{h}{2}
+%    \hexshadedsubrow{b}{g}{3}
+%    \hexshadedsubrow{c}{e}{4}
+%    \hexreducing{10}{5}
+%    \hexcounter{d}{4}{A}
+%    \hexdot{c}{3}
+%    \hexdot{f}{3}
+%    \hexconnect{c}{3}{d}{3}
+%    \hexconnect{c}{4}{c}{3}
+%    \hexconnect{d}{4}{c}{4}
+%    \hexconnect{d}{4}{d}{3}
+%    \hexconnect{d}{4}{e}{3}
+%    \hexconnect{e}{3}{f}{3}
+%    \hexconnect{d}{4}{e}{4}
+%    \hexconnect{e}{4}{f}{3}
+%\end{hexpicture}
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexsubrow{b}{f}{1}
+%\hexsubrow{a}{e}{2}
+%\hexsubrow{a}{d}{3}
+%\hexsubrow{a}{c}{4}
+%\hexshadedsubrow{c}{e}{1}
+%\hexshadedsubrow{b}{d}{2}
+%\hexshadedsubrow{b}{c}{3}
+%\hexbottomsubborder{b}{f}
+%\hexcounter{b}{3}{A}
+%\hexcounter{c}{3}{A}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexsubrow{b}{f}{1}
+%    \hexsubrow{a}{e}{2}
+%    \hexsubrow{a}{d}{3}
+%    \hexsubrow{a}{c}{4}
+%    \hexshadedsubrow{c}{e}{1}
+%    \hexshadedsubrow{b}{d}{2}
+%    \hexshadedsubrow{b}{c}{3}
+%    \hexbottomsubborder{b}{f}
+%    \hexcounter{b}{3}{A}
+%    \hexcounter{c}{3}{A}
+%\end{hexpicture}
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexsubrow{b}{g}{1}
+%\hexsubrow{b}{f}{2}
+%\hexsubrow{a}{e}{3}
+%\hexsubrow{a}{d}{4}
+%\hexshadedsubrow{c}{f}{1}
+%\hexshadedsubrow{c}{e}{2}
+%\hexshadedsubrow{b}{d}{3}
+%\hexshadedsubrow{b}{c}{4}
+%\hexbottomsubborder{b}{g}
+%\hexcounter{b}{4}{A}
+%\hexcounter{c}{4}{A}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexsubrow{b}{g}{1}
+%    \hexsubrow{b}{f}{2}
+%    \hexsubrow{a}{e}{3}
+%    \hexsubrow{a}{d}{4}
+%    \hexshadedsubrow{c}{f}{1}
+%    \hexshadedsubrow{c}{e}{2}
+%    \hexshadedsubrow{b}{d}{3}
+%    \hexshadedsubrow{b}{c}{4}
+%    \hexbottomsubborder{b}{g}
+%    \hexcounter{b}{4}{A}
+%    \hexcounter{c}{4}{A}
+%\end{hexpicture}
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexboard{3}
+%\hexcounter{a}{2}{B}
+%\hexcounter{b}{3}{B}
+%\hexcounter{c}{3}{A}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexboard{3}
+%    \hexcounter{a}{2}{B}
+%    \hexcounter{b}{3}{B}
+%    \hexcounter{c}{3}{A}
+%\end{hexpicture}
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexboard{4}
+%\hexcounter{d}{1}{B}
+%\hexcounter{a}{1}{A}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexboard{4}
+%    \hexcounter{d}{1}{B}
+%    \hexcounter{a}{1}{A}
+%\end{hexpicture}
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexboard{5}
+%\hexcounter{b}{1}{B}
+%\hexcounter{c}{2}{B}
+%\hexcounter{d}{2}{B}
+%\hexcounter{c}{1}{A}
+%\hexcounter{e}{1}{A}
+%\hexcounter{c}{3}{A}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexboard{5}
+%    \hexcounter{b}{1}{B}
+%    \hexcounter{c}{2}{B}
+%    \hexcounter{d}{2}{B}
+%    \hexcounter{c}{1}{A}
+%    \hexcounter{e}{1}{A}
+%    \hexcounter{c}{3}{A}
+%\end{hexpicture}
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexboard{11}
+%\hexcounter{a}{4}{B}
+%\hexcounter{b}{4}{B}
+%\hexcounter{c}{4}{B}
+%\hexcounter{d}{4}{B}
+%\hexcounter{e}{4}{B}
+%\hexcounter{f}{4}{B}
+%\hexcounter{g}{4}{B}
+%\hexcounter{h}{4}{A}
+%\hexcounter{i}{4}{B}
+%\hexcounter{j}{4}{B}
+%\hexcounter{k}{4}{B}
+%\hexcounter{b}{3}{A}
+%\hexcounter{f}{8}{B}
+%\hexcounter{g}{8}{B}
+%\hexcounter{i}{8}{A}
+%\hexcounter{d}{9}{A}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexboard{11}
+%    \hexcounter{a}{4}{B}
+%    \hexcounter{b}{4}{B}
+%    \hexcounter{c}{4}{B}
+%    \hexcounter{d}{4}{B}
+%    \hexcounter{e}{4}{B}
+%    \hexcounter{f}{4}{B}
+%    \hexcounter{g}{4}{B}
+%    \hexcounter{h}{4}{A}
+%    \hexcounter{i}{4}{B}
+%    \hexcounter{j}{4}{B}
+%    \hexcounter{k}{4}{B}
+%    \hexcounter{b}{3}{A}
+%    \hexcounter{f}{8}{B}
+%    \hexcounter{g}{8}{B}
+%    \hexcounter{i}{8}{A}
+%    \hexcounter{d}{9}{A}
+%\end{hexpicture}
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexsubrow{b}{c}{1}
+%\hexsubrow{a}{c}{2}
+%\hexsubrow{a}{b}{3}
+%
+%\hexsubrow{f}{g}{1}
+%\hexsubrow{e}{g}{2}
+%\hexsubrow{e}{f}{3}
+%
+%\hexsubrow{j}{k}{1}
+%\hexsubrow{i}{k}{2}
+%\hexsubrow{i}{j}{3}
+%
+%\hexcounter{b}{2}{A}
+%\hexcounter{b}{1}{B}
+%\hexcounter{c}{1}{A}
+%
+%\hexcontent{d}{2}{\(\to\)}
+%
+%\hexcounter{f}{2}{A}
+%\hexcounter{f}{1}{B}
+%\hexcounter{g}{1}{A}
+%\hexcounter{f}{3}{B}
+%
+%\hexcontent{h}{2}{\(\to\)}
+%
+%\hexcounter{j}{2}{A}
+%\hexcounter{j}{1}{B}
+%\hexcounter{k}{1}{A}
+%\hexcounter{j}{3}{B}
+%\hexcounter{i}{3}{A}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexsubrow{b}{c}{1}
+%    \hexsubrow{a}{c}{2}
+%    \hexsubrow{a}{b}{3}
+%    
+%    \hexsubrow{f}{g}{1}
+%    \hexsubrow{e}{g}{2}
+%    \hexsubrow{e}{f}{3}
+%    
+%    \hexsubrow{j}{k}{1}
+%    \hexsubrow{i}{k}{2}
+%    \hexsubrow{i}{j}{3}
+%    
+%    \hexcounter{b}{2}{A}
+%    \hexcounter{b}{1}{B}
+%    \hexcounter{c}{1}{A}
+%    
+%    \hexcontent{d}{2}{\(\to\)}
+%    
+%    \hexcounter{f}{2}{A}
+%    \hexcounter{f}{1}{B}
+%    \hexcounter{g}{1}{A}
+%    \hexcounter{f}{3}{B}
+%    
+%    \hexcontent{h}{2}{\(\to\)}
+%    
+%    \hexcounter{j}{2}{A}
+%    \hexcounter{j}{1}{B}
+%    \hexcounter{k}{1}{A}
+%    \hexcounter{j}{3}{B}
+%    \hexcounter{i}{3}{A}
+%\end{hexpicture}
+%
+%\section{Other games}
+%
+%The target of this package is Hex. However, notice that some games on a hexagonal grid can be created using the commands provided here with cells shaded and counters, dots and lines placed in the usual way.
+%
+%For example, Y is played on a reducing hexagonal grid that can be created using \verb|\hexreducingnoborder|. For example
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexreducingnoborder{11}{11}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexreducingnoborder{11}{11}
+%\end{hexpicture}\\
+%
+%Similarly, games such as Cross, Pentalath, Yavalath and Three Player Hex can be played on a hexagonal board without coloured borders which can be created via use of \verb|\hexsubrow|.
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexsubrow{a}{g}{13}
+%\hexsubrow{a}{h}{12}
+%\hexsubrow{a}{i}{11}
+%\hexsubrow{a}{j}{10}
+%\hexsubrow{a}{k}{9}
+%\hexsubrow{a}{l}{8}
+%\hexsubrow{a}{m}{7}
+%\hexsubrow{b}{m}{6}
+%\hexsubrow{c}{m}{5}
+%\hexsubrow{d}{m}{4}
+%\hexsubrow{e}{m}{3}
+%\hexsubrow{f}{m}{2}
+%\hexsubrow{g}{m}{1}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexsubrow{a}{g}{13}
+%    \hexsubrow{a}{h}{12}
+%    \hexsubrow{a}{i}{11}
+%    \hexsubrow{a}{j}{10}
+%    \hexsubrow{a}{k}{9}
+%    \hexsubrow{a}{l}{8}
+%    \hexsubrow{a}{m}{7}
+%    \hexsubrow{b}{m}{6}
+%    \hexsubrow{c}{m}{5}
+%    \hexsubrow{d}{m}{4}
+%    \hexsubrow{e}{m}{3}
+%    \hexsubrow{f}{m}{2}
+%    \hexsubrow{g}{m}{1}
+%\end{hexpicture}
+%
+%If desired, certain cells can be shaded in the usual way. 
+%
+%\begin{verbatim}\begin{hexpicture}
+%\hexsubrow{a}{g}{13}
+%\hexsubrow{a}{h}{12}
+%\hexsubrow{a}{i}{11}
+%\hexsubrow{a}{j}{10}
+%\hexsubrow{a}{k}{9}
+%\hexsubrow{a}{l}{8}
+%\hexsubrow{a}{m}{7}
+%\hexsubrow{b}{m}{6}
+%\hexsubrow{c}{m}{5}
+%\hexsubrow{d}{m}{4}
+%\hexsubrow{e}{m}{3}
+%\hexsubrow{f}{m}{2}
+%\hexsubrow{g}{m}{1}
+%\hexshadedsubrow{g}{l}{2}
+%\hexcellshaded{f}{3}
+%\hexcellshaded{l}{3}
+%\hexcellshaded{e}{4}
+%\hexcellshaded{l}{4}
+%\hexcellshaded{d}{5}
+%\hexcellshaded{l}{5}
+%\hexcellshaded{c}{6}
+%\hexcellshaded{l}{6}
+%\hexcellshaded{b}{7}
+%\hexcellshaded{l}{7}
+%\hexcellshaded{b}{8}
+%\hexcellshaded{k}{8}
+%\hexcellshaded{b}{9}
+%\hexcellshaded{j}{9}
+%\hexcellshaded{b}{10}
+%\hexcellshaded{i}{10}
+%\hexcellshaded{b}{11}
+%\hexcellshaded{h}{11}
+%\hexshadedsubrow{b}{g}{12}
+%\end{hexpicture}\end{verbatim}
+%
+%\begin{hexpicture}
+%    \hexsubrow{a}{g}{13}
+%    \hexsubrow{a}{h}{12}
+%    \hexsubrow{a}{i}{11}
+%    \hexsubrow{a}{j}{10}
+%    \hexsubrow{a}{k}{9}
+%    \hexsubrow{a}{l}{8}
+%    \hexsubrow{a}{m}{7}
+%    \hexsubrow{b}{m}{6}
+%    \hexsubrow{c}{m}{5}
+%    \hexsubrow{d}{m}{4}
+%    \hexsubrow{e}{m}{3}
+%    \hexsubrow{f}{m}{2}
+%    \hexsubrow{g}{m}{1}
+%    \hexshadedsubrow{g}{l}{2}
+%    \hexcellshaded{f}{3}
+%    \hexcellshaded{l}{3}
+%    \hexcellshaded{e}{4}
+%    \hexcellshaded{l}{4}
+%    \hexcellshaded{d}{5}
+%    \hexcellshaded{l}{5}
+%    \hexcellshaded{c}{6}
+%    \hexcellshaded{l}{6}
+%    \hexcellshaded{b}{7}
+%    \hexcellshaded{l}{7}
+%    \hexcellshaded{b}{8}
+%    \hexcellshaded{k}{8}
+%    \hexcellshaded{b}{9}
+%    \hexcellshaded{j}{9}
+%    \hexcellshaded{b}{10}
+%    \hexcellshaded{i}{10}
+%    \hexcellshaded{b}{11}
+%    \hexcellshaded{h}{11}
+%    \hexshadedsubrow{b}{g}{12}
+%\end{hexpicture}
+%\iffalse
+%<*documentation>
+\documentclass[a4paper]{article}
+\usepackage{a4wide}
+\usepackage{upquote}
+\usepackage{hexboard}
+\usepackage{doc}
+\usepackage{rotating}
+\usepackage{hyperref}
+\begin{document}
+    \DocInput{hexboard.dtx}
+\end{document}
+%</documentation>
+%\fi
+%\iffalse
+%<*hexboard>
+\ProvidesPackage{hexboard}[2022/02/19 hexboard 1.0]
+
+\RequirePackage{tikz}
+\usetikzlibrary{shapes.geometric}
+\RequirePackage{xstring}
+
+\makeatletter
+\@ifundefined{c@hexedge}{}
+{\PackageWarning{hexboard}{Counter `hexedge' already defined}}
+\@ifundefined{c@hexmovecount}{}
+{\PackageWarning{hexboard}{Counter `hexmovecount' already defined}}
+\@ifundefined{c@hexmoveskips}{}
+{\PackageWarning{hexboard}{Counter `hexmoveskips' already defined}}
+\@ifundefined{c@hexletternum}{}
+{\PackageWarning{hexboard}{Counter `hexletternum' already defined}}
+\@ifundefined{hexboard}{}
+{\PackageWarning{hexboard}{command `hexboard' already defined}}
+\@ifundefined{hexcounter}{}
+{\PackageWarning{hexboard}{command `hexcounter' already defined}}
+\@ifundefined{hexcellshaded}{}
+{\PackageWarning{hexboard}{command `hexcellshaded' already defined}}
+\@ifundefined{hexdot}{}
+{\PackageWarning{hexboard}{command `hexdot' already defined}}
+\@ifundefined{hexconnect}{}
+{\PackageWarning{hexboard}{command `hexconnect' already defined}}
+\@ifundefined{hexcontent}{}
+{\PackageWarning{hexboard}{command `hexcontent' already defined}}
+\@ifundefined{hexcell}{}
+{\PackageWarning{hexboard}{command `hexcell' already defined}}
+\@ifundefined{hexgridnolabel}{}
+{\PackageWarning{hexboard}{command `hexgridnolabel' already defined}}
+\@ifundefined{hexreducing}{}
+{\PackageWarning{hexboard}{command `hexreducing' already defined}}
+\@ifundefined{hexshadedsubrow}{}
+{\PackageWarning{hexboard}{command `hexshadedsubrow' already defined}}
+\@ifundefined{hexgrid}{}
+{\PackageWarning{hexboard}{command `hexgrid' already defined}}
+\@ifundefined{setcolorA}{}
+{\PackageWarning{hexboard}{command `setcolorA' already defined}}
+\@ifundefined{setcolorB}{}
+{\PackageWarning{hexboard}{command `setcolorB' already defined}}
+\@ifundefined{hexscale}{}
+{\PackageWarning{hexboard}{command `hexscale' already defined}}
+\@ifundefined{xchor}{}
+{\PackageWarning{hexboard}{command `xchor' already defined}}
+\@ifundefined{ychor}{}
+{\PackageWarning{hexboard}{command `ychor' already defined}}
+\@ifundefined{colorA}{}
+{\PackageWarning{hexboard}{command `colorA' already defined}}
+\@ifundefined{colorB}{}
+{\PackageWarning{hexboard}{command `colorB' already defined}}
+\@ifundefined{hexlinewidth}{}
+{\PackageWarning{hexboard}{command `hexlinewidth' already defined}}
+\@ifundefined{hexedgewidth}{}
+{\PackageWarning{hexboard}{command `hexedgewidth' already defined}}
+\@ifundefined{hexthinline}{}
+{\PackageWarning{hexboard}{command `hexthinline' already defined}}
+\@ifundefined{hexcoord}{}
+{\PackageWarning{hexboard}{command `hexcoord' already defined}}
+\@ifundefined{hexsize}{}
+{\PackageWarning{hexboard}{command `hexsize' already defined}}
+\@ifundefined{Ia}{}
+{\PackageWarning{hexboard}{command `Ia' already defined}}
+\@ifundefined{Ib}{}
+{\PackageWarning{hexboard}{command `Ib' already defined}}
+\@ifundefined{Iaend}{}
+{\PackageWarning{hexboard}{command `Iaend' already defined}}
+\@ifundefined{leftofIa}{}
+{\PackageWarning{hexboard}{command `leftofIa' already defined}}
+\@ifundefined{belowIa}{}
+{\PackageWarning{hexboard}{command `belowIa' already defined}}
+\@ifundefined{leftofxchor}{}
+{\PackageWarning{hexboard}{command `leftofxchor' already defined}}
+\@ifundefined{hexgame}{}
+{\PackageWarning{hexboard}{command `hexgame' already defined}}
+\@ifundefined{hexgamelabels}{}
+{\PackageWarning{hexboard}{command `hexgamelabels' already defined}}
+\@ifundefined{hexthismover}{}
+{\PackageWarning{hexboard}{command `hexthismover' already defined}}
+\@ifundefined{hexmove}{}
+{\PackageWarning{hexboard}{command `hexmove' already defined}}
+\@ifundefined{hexletter}{}
+{\PackageWarning{hexboard}{command `hexletter' already defined}}
+\@ifundefined{hexsubrow}{}
+{\PackageWarning{hexboard}{command `hexsubrow' already defined}}
+\@ifundefined{hexskipmove}{}
+{\PackageWarning{hexboard}{command `hexskipmove' already defined}}
+\@ifundefined{hexmovenumber}{}
+{\PackageWarning{hexboard}{command `hexmovenumber' already defined}}
+\makeatother
+
+\newcommand{\xchor}{0} % x-coordinate.
+\newcommand{\ychor}{0} % y-coordinate.
+
+\newcommand{\colorA}{red}
+\newcommand{\colorB}{blue}
+\newcommand{\hexlinewidth}{0.07}
+\newcommand{\hexedgewidth}{0.15}
+\newcommand{\hexthinline}{0.03}
+\newcommand{\hexscale}[1]{
+    \tikzset{hex/.style={scale=#1,every node/.style={scale=#1}}}
+    \pgfmathsetmacro\hexlinewidth{#1 * 0.07}
+    \pgfmathsetmacro\hexedgewidth{#1 * 0.15}
+    \pgfmathsetmacro\hexthinline{#1 * 0.03}
+}
+\hexscale{2}
+
+\newcommand{\setcolorA}[1]{\renewcommand{\colorA}{#1}}
+\newcommand{\setcolorB}[1]{\renewcommand{\colorB}{#1}}
+
+%% This calculates the values of the hex coordinate grid.
+% xc =  x + 0.5 y
+% yc =  sqrt(3)/2*y
+\newcounter{hexletternum}
+\newcommand{\hexcoord}[2]{%
+    \ifnum0<0#1\relax % is it a number?
+    \pgfmathsetmacro\xchor{#1 + 0.5 * #2}
+    \else % assume it's a letter
+    \setcounter{hexletternum}{0}
+    \foreach \hexletter in {a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z}{%
+        \addtocounter{hexletternum}{1}
+        \IfEq{\hexletter}{#1}{\breakforeach}{}
+    }
+    \pgfmathsetmacro\xchor{\value{hexletternum} + 0.5 * #2}
+    \fi
+    \pgfmathsetmacro\ychor{sqrt(3)/2 * #2}
+}
+
+\pgfmathsetmacro\hexsize{2/sqrt(3)} % size of the node we want tikz to draw a hexagon inside
+
+\newcommand{\hexcell}[2]{%
+    \hexcoord{#1}{#2}
+    \node[regular polygon,draw,regular polygon sides=6,rotate=90,line width=\hexlinewidth em,minimum size=\hexsize em]  at (\xchor em,\ychor em) {};
+}
+
+\newcommand{\hexcellshaded}[3][yellow]{%
+    \hexcoord{#2}{#3}
+    \node[regular polygon,draw,regular polygon sides=6,rotate=90,line width=\hexlinewidth em,minimum size=\hexsize em,fill=#1] at (\xchor em,\ychor em) {};
+}
+
+% Place a counter in the spot.
+% Radius of the incircle of the hex is 0.5, so we make the radius a little smaller
+\newcommand{\thiscolor}{\colorB}
+\newcommand{\hexcounter}[3]{%
+    \renewcommand{\thiscolor}{\colorB}
+    \def\testA{A}
+    \def\argiii{#3}
+    \if\argiii\testA
+    \renewcommand{\thiscolor}{\colorA}
+    \fi
+    
+    \hexcoord{#1}{#2}
+    \draw[\thiscolor,fill=\thiscolor] (\xchor em,\ychor em) circle (0.35em);
+}
+\newcommand{\hexcounterlabel}[4]{%
+    \hexcounter{#1}{#2}{#3}
+    \hexcontent[white]{#1}{#2}{#4}
+}
+
+\newcommand{\hexdot}[2]{%
+    \hexcoord{#1}{#2}
+    \draw[fill] (\xchor em,\ychor em) circle (0.1em);
+}
+
+\newcommand{\hexcontent}[4][black]{%
+    \hexcoord{#2}{#3}
+    \node[text=#1] at (\xchor em,\ychor em) {{\sf\scriptsize #4}};
+}
+
+% This shows a curved line through three hexes. PR I'm not sure this describes what the original did - no curve? And it goes from (#1,#2) to (#3,#4).
+% used to display bridges
+\newcommand{\hexconnect}[4]{%
+    \hexcoord{#1}{#2}
+    \node[minimum size=0,inner sep=0,outer sep=0] (A) at (\xchor em,\ychor em) {};
+    \hexcoord{#3}{#4}
+    \node[minimum size=0,inner sep=0,outer sep=0] (B) at (\xchor em,\ychor em) {};
+    \draw[line width=\hexthinline em,line cap=round] (A) -- (B);
+}
+
+\newcommand{\hexgridnolabel}[2]{
+    
+    \foreach \Ia in {1,...,#1}{
+        % Place the hex cells.
+        \foreach \Ib in {1,...,#2}{
+            \hexcell{\Ia}{\Ib}
+        }
+    }
+    \ifnum#1<3 % don't loop
+    \ifnum#1=2
+    % Coloured boundary
+    \hexcoord{1}{1}
+    \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom edge
+    \hexcoord{1}{#2}
+    \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,0.288675 em) -- (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top edge
+    %        \else % 1, hopefully
+    %            % Coloured boundary
+    %            \hexcoord{1}{1}
+    %            \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom edge
+    %            \hexcoord{1}{#2}
+    %            \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,0.288675 em) -- (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top edge
+    \fi
+    \else
+    \pgfmathsetmacro\Iaend{#1-1}
+    \foreach \Ia in {2,...,\Iaend}{ % top to bottom player A
+        % Coloured boundary
+        \hexcoord{\Ia}{1}
+        \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom edge
+        \hexcoord{\Ia}{#2}
+        \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,0.288675 em) -- (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top edge
+    }
+    \fi
+    
+    % Awkward corners
+    
+    \hexcoord{1}{#2}
+    \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=butt] (-0.25 em,0.4330125 em) -- (0 em,0.577350 em);
+    \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top left colorA
+    
+    \ifnum#1>1
+    \hexcoord{#1}{#2}
+    \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=butt] (-0.5 em,0.288675 em) -- (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top right colorA
+    \hexcoord{1}{1}
+    \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom left colorA
+    \fi
+    
+    \hexcoord{#1}{1}
+    \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em); % top right colorA
+    \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=butt] (0.25 em,-0.4330125 em) -- (0 em,-0.577350 em); % awkward bit
+    
+    
+    \ifnum#2<3 % don't loop
+    \ifnum#2=2
+    % Coloured boundary
+    \hexcoord{1}{1}
+    \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (-0.5 em,0.288675 em) -- (0 em,0.577350 em); % left edge
+    \hexcoord{#1}{2}
+    \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (0 em,-0.577350 em) -- (0.5 em,-0.288675 em) -- (0.5 em,0.288675 em); % right edge
+    %        \else % 1, hopefully
+    %            % Coloured boundary
+    %            \hexcoord{1}{1}
+    %            \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom edge
+    %            \hexcoord{1}{#2}
+    %            \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,0.288675 em) -- (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top edge
+    \fi
+    \else
+    \pgfmathsetmacro\Iaend{#2-1}
+    \foreach \Ia in {2,...,\Iaend}{ % left to right player B
+        % Coloured boundary
+        \hexcoord{1}{\Ia}
+        \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (-0.5 em,0.288675 em) -- (0 em,0.577350 em); % left edge
+        \hexcoord{#1}{\Ia}
+        \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (0 em,-0.577350 em) -- (0.5 em,-0.288675 em) -- (0.5 em,0.288675 em); % right edge
+    }
+    \fi
+    
+    % Awkward corners
+    \hexcoord{#1}{1}
+    \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=butt] (0.25 em,-0.4330125 em) -- (0.5 em,-0.288675 em);
+    
+    \ifnum#2>1
+    \hexcoord{1}{1}
+    \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=] (-0.5 em,-0.288675 em) -- (-0.5 em,0.288675 em) -- (0 em,0.577350 em); % bottom left colorB
+    \hexcoord{#1}{#2}
+    \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (0 em,-0.577350 em) -- (0.5 em,-0.288675 em) -- (0.5 em,0.288675 em); % top right colorB
+    \fi 
+    
+    \hexcoord{#1}{1}
+    \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (0.5 em,-0.288675 em) -- (0.5 em,0.288675 em); % bottom right colorB
+    
+    \hexcoord{1}{#2}
+    \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (-0.5 em,0.288675 em); % top left colorB
+    \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=butt] (-0.25 em,0.4330125 em) -- (-0.5 em,0.288675 em); % awkward bit
+}
+
+\newcommand{\hexreducingnoborder}[2]{
+    % Place the hex cells.
+    \foreach \Ib in {1,...,#2}{
+        \pgfmathsetmacro\Iaend{#1+1-\Ib}
+        \foreach \Ia in {1,...,\Iaend}{
+            \hexcell{\Ia}{\Ib}
+        }
+        
+    }
+}
+
+\newcommand{\hexbottomsubborder}[2]{%
+    % Coloured boundary
+    
+    % bottom edge
+    \foreach \Ia in {#1,...,#2}{ 
+        % Coloured boundary
+        \hexcoord{\Ia}{1}
+        \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom edge
+    }
+}
+
+
+\newcommand{\hexreducing}[2]{
+    % Place the hex cells.
+    \hexreducingnoborder{#1}{#2}
+    
+    % bottom edge
+    \hexbottomsubborder{1}{#1}
+}
+
+\newcommand{\hexsubrow}[3]{
+    \foreach \Ia in {#1,...,#2}{\hexcell{\Ia}{#3}}
+}
+
+\newcommand{\hexshadedsubrow}[3]{
+    \foreach \Ia in {#1,...,#2}{\hexcellshaded{\Ia}{#3}}
+}
+
+\newcounter{hexedge}
+\newcommand{\hexgrid}[2]{
+    \hexgridnolabel{#1}{#2}
+    
+    % labels
+    \setcounter{hexedge}{0}
+    \foreach \Ia in {1,...,#1}{
+        \addtocounter{hexedge}{1}
+        \pgfmathsetmacro\leftofIa{\Ia+0.1}
+        \pgfmathsetmacro\belowIa{1-1/sqrt(3)-0.2}
+        \ifnum\value{hexedge}<27
+        \node[scale=0.3] at (\leftofIa em,\belowIa em) {{\sf\color{\colorA}\alph{hexedge}}};
+        \else
+        \node[scale=0.3] at (\leftofIa em,\belowIa em) {{\sf\color{\colorA}\arabic{hexedge}}};
+        \fi
+    }
+    \setcounter{hexedge}{0}
+    \foreach \Ia in {1,...,#2}{
+        \addtocounter{hexedge}{1}
+        \hexcoord{1}{\Ia}
+        \pgfmathsetmacro\leftofxchor{\xchor-0.75}
+        \node[scale=0.3] at (\leftofxchor em,\ychor em) {{\sf\color{\colorB}\arabic{hexedge}}};
+    }
+}
+
+\newcommand{\hexboard}[1]{
+    \hexgrid{#1}{#1}
+}
+
+\newenvironment{hexpicture}{\begin{tikzpicture}[hex]}{\end{tikzpicture}}
+
+\newcounter{hexmovecount} % keep track of moves
+\newcounter{hexmoveskips} % count skipped moves
+\newcommand{\hexmovenumber}{0} % label of current move
+
+\newcounter{hexlabelling}
+\newenvironment{hexgame}[1][11]{%
+    \begin{hexpicture}
+        \hexboard{#1}
+        \setcounter{hexmovecount}{0}
+        \setcounter{hexmoveskips}{0}
+        \setcounter{hexlabelling}{0}}
+    {\end{hexpicture}}
+\newenvironment{hexgamelabels}[1][11]{%
+    \begin{hexgame}[#1]
+        \setcounter{hexlabelling}{1}}
+    {\end{hexgame}}
+
+
+\newcommand{\hexthismover}{B}
+
+\newcommand{\hexmove}[2]{%
+    \addtocounter{hexmovecount}{1}
+    \renewcommand{\hexthismover}{B}
+    \ifodd\value{hexmovecount}\renewcommand{\hexthismover}{A}\fi
+    
+    \pgfmathtruncatemacro\hexmovenumber{\value{hexmovecount}-\value{hexmoveskips}} % move label is moves minus skips
+    \ifnum\value{hexlabelling}=1\hexcounterlabel{#1}{#2}{\hexthismover}{\hexmovenumber}\else\hexcounter{#1}{#2}{\hexthismover}\fi
+}
+
+\newcommand{\hexskipmove}{%
+    \addtocounter{hexmovecount}{1}
+    \addtocounter{hexmoveskips}{1}
+}
+%</hexboard>
+%\fi
