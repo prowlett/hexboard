@@ -344,17 +344,18 @@
 \newcounter{hexmoveskips} % count skipped moves
 \newcommand{\hexmovenumber}{0} % label of current move
 
-\let\ifhexmovelabelling\iffalse
+\newcounter{hexlabelling}
+
 \newenvironment{hexgame}[1][11]{%
 \begin{hexpicture}
     \hexboard{#1}
     \setcounter{hexmovecount}{0}
     \setcounter{hexmoveskips}{0}
-    \let\ifhexmovelabelling\iffalse}
+    \setcounter{hexlabelling}{0}}
 {\end{hexpicture}}
 \newenvironment{hexgamelabels}[1][11]{%
 \begin{hexgame}[#1]
-    \let\ifhexmovelabelling\iftrue}
+    \setcounter{hexlabelling}{1}}
 {\end{hexgame}}
 
 
@@ -366,7 +367,7 @@
     \ifodd\value{hexmovecount}\renewcommand{\hexthismover}{A}\fi
     
     \pgfmathtruncatemacro\hexmovenumber{\value{hexmovecount}-\value{hexmoveskips}} % move label is moves minus skips
-    \ifhexmovelabelling\hexcounterlabel{#1}{#2}{\hexthismover}{\hexmovenumber}\else\hexcounter{#1}{#2}{\hexthismover}\fi
+    \ifnum \value{hexlabelling}=1 \hexcounterlabel{#1}{#2}{\hexthismover}{\hexmovenumber}\else\hexcounter{#1}{#2}{\hexthismover}\fi
 }
 
 \newcommand{\hexskipmove}{%
