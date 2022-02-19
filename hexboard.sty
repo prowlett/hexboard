@@ -1,9 +1,20 @@
-\ProvidesPackage{hexboard}
+%%
+%% This is file `hexboard.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% hexboard.dtx  (with options: `hexboard')
+%% Copyright (c) 2022 Peter Rowlett and Chris Sangwin
+%% 
+%% The package is licenced under Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0). To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/4.0/
+\ProvidesPackage{hexboard}[2022/02/19 hexboard 1.0]
 
 \RequirePackage{tikz}
 \usetikzlibrary{shapes.geometric}
 \RequirePackage{xstring}
 
+\makeatletter
 \@ifundefined{c@hexedge}{}
 {\PackageWarning{hexboard}{Counter `hexedge' already defined}}
 \@ifundefined{c@hexmovecount}{}
@@ -86,6 +97,7 @@
 {\PackageWarning{hexboard}{command `hexskipmove' already defined}}
 \@ifundefined{hexmovenumber}{}
 {\PackageWarning{hexboard}{command `hexmovenumber' already defined}}
+\makeatother
 
 \newcommand{\xchor}{0} % x-coordinate.
 \newcommand{\ychor}{0} % y-coordinate.
@@ -107,19 +119,17 @@
 \newcommand{\setcolorB}[1]{\renewcommand{\colorB}{#1}}
 
 %% This calculates the values of the hex coordinate grid.
-% xc =  x + 0.5 y
-% yc =  sqrt(3)/2*y
 \newcounter{hexletternum}
 \newcommand{\hexcoord}[2]{%
     \ifnum0<0#1\relax % is it a number?
-        \pgfmathsetmacro\xchor{#1 + 0.5 * #2}
+    \pgfmathsetmacro\xchor{#1 + 0.5 * #2}
     \else % assume it's a letter
-        \setcounter{hexletternum}{0}
-        \foreach \hexletter in {a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z}{%
-            \addtocounter{hexletternum}{1}
-            \IfEq{\hexletter}{#1}{\breakforeach}{}
-        }
-        \pgfmathsetmacro\xchor{\value{hexletternum} + 0.5 * #2}
+    \setcounter{hexletternum}{0}
+    \foreach \hexletter in {a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z}{%
+        \addtocounter{hexletternum}{1}
+        \IfEq{\hexletter}{#1}{\breakforeach}{}
+    }
+    \pgfmathsetmacro\xchor{\value{hexletternum} + 0.5 * #2}
     \fi
     \pgfmathsetmacro\ychor{sqrt(3)/2 * #2}
 }
@@ -136,17 +146,15 @@
     \node[regular polygon,draw,regular polygon sides=6,rotate=90,line width=\hexlinewidth em,minimum size=\hexsize em,fill=#1] at (\xchor em,\ychor em) {};
 }
 
-% Place a counter in the spot.
-% Radius of the incircle of the hex is 0.5, so we make the radius a little smaller
 \newcommand{\thiscolor}{\colorB}
 \newcommand{\hexcounter}[3]{%
     \renewcommand{\thiscolor}{\colorB}
     \def\testA{A}
     \def\argiii{#3}
     \if\argiii\testA
-        \renewcommand{\thiscolor}{\colorA}
+    \renewcommand{\thiscolor}{\colorA}
     \fi
-    
+
     \hexcoord{#1}{#2}
     \draw[\thiscolor,fill=\thiscolor] (\xchor em,\ychor em) circle (0.35em);
 }
@@ -165,8 +173,6 @@
     \node[text=#1] at (\xchor em,\ychor em) {{\sf\scriptsize #4}};
 }
 
-% This shows a curved line through three hexes. PR I'm not sure this describes what the original did - no curve? And it goes from (#1,#2) to (#3,#4).
-% used to display bridges
 \newcommand{\hexconnect}[4]{%
     \hexcoord{#1}{#2}
     \node[minimum size=0,inner sep=0,outer sep=0] (A) at (\xchor em,\ychor em) {};
@@ -176,7 +182,7 @@
 }
 
 \newcommand{\hexgridnolabel}[2]{
-    
+
     \foreach \Ia in {1,...,#1}{
         % Place the hex cells.
         \foreach \Ib in {1,...,#2}{
@@ -184,87 +190,86 @@
         }
     }
     \ifnum#1<3 % don't loop
-        \ifnum#1=2
-            % Coloured boundary
-            \hexcoord{1}{1}
-            \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom edge
-            \hexcoord{1}{#2}
-            \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,0.288675 em) -- (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top edge
-%        \else % 1, hopefully
-%            % Coloured boundary
-%            \hexcoord{1}{1}
-%            \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom edge
-%            \hexcoord{1}{#2}
-%            \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,0.288675 em) -- (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top edge
-        \fi
-    \else
-        \pgfmathsetmacro\Iaend{#1-1}
-        \foreach \Ia in {2,...,\Iaend}{ % top to bottom player A
-            % Coloured boundary
-            \hexcoord{\Ia}{1}
-            \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom edge
-            \hexcoord{\Ia}{#2}
-            \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,0.288675 em) -- (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top edge
-        }
+    \ifnum#1=2
+    % Coloured boundary
+    \hexcoord{1}{1}
+    \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom edge
+    \hexcoord{1}{#2}
+    \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,0.288675 em) -- (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top edge
+    %        \else % 1, hopefully
+    %            % Coloured boundary
+    %            \hexcoord{1}{1}
+    %            \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom edge
+    %            \hexcoord{1}{#2}
+    %            \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,0.288675 em) -- (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top edge
     \fi
-    
+    \else
+    \pgfmathsetmacro\Iaend{#1-1}
+    \foreach \Ia in {2,...,\Iaend}{ % top to bottom player A
+        % Coloured boundary
+        \hexcoord{\Ia}{1}
+        \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom edge
+        \hexcoord{\Ia}{#2}
+        \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,0.288675 em) -- (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top edge
+    }
+    \fi
+
     % Awkward corners
-         
+
     \hexcoord{1}{#2}
     \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=butt] (-0.25 em,0.4330125 em) -- (0 em,0.577350 em);
     \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top left colorA
-    
+
     \ifnum#1>1
-        \hexcoord{#1}{#2}
-        \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=butt] (-0.5 em,0.288675 em) -- (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top right colorA
-        \hexcoord{1}{1}
-        \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom left colorA
+    \hexcoord{#1}{#2}
+    \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=butt] (-0.5 em,0.288675 em) -- (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top right colorA
+    \hexcoord{1}{1}
+    \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom left colorA
     \fi
-    
+
     \hexcoord{#1}{1}
     \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em); % top right colorA
     \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=butt] (0.25 em,-0.4330125 em) -- (0 em,-0.577350 em); % awkward bit
-    
-    
+
     \ifnum#2<3 % don't loop
-        \ifnum#2=2
-            % Coloured boundary
-            \hexcoord{1}{1}
-            \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (-0.5 em,0.288675 em) -- (0 em,0.577350 em); % left edge
-            \hexcoord{#1}{2}
-            \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (0 em,-0.577350 em) -- (0.5 em,-0.288675 em) -- (0.5 em,0.288675 em); % right edge
-%        \else % 1, hopefully
-%            % Coloured boundary
-%            \hexcoord{1}{1}
-%            \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom edge
-%            \hexcoord{1}{#2}
-%            \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,0.288675 em) -- (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top edge
-        \fi
-    \else
-        \pgfmathsetmacro\Iaend{#2-1}
-        \foreach \Ia in {2,...,\Iaend}{ % left to right player B
-            % Coloured boundary
-            \hexcoord{1}{\Ia}
-            \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (-0.5 em,0.288675 em) -- (0 em,0.577350 em); % left edge
-            \hexcoord{#1}{\Ia}
-            \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (0 em,-0.577350 em) -- (0.5 em,-0.288675 em) -- (0.5 em,0.288675 em); % right edge
-        }
+    \ifnum#2=2
+    % Coloured boundary
+    \hexcoord{1}{1}
+    \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (-0.5 em,0.288675 em) -- (0 em,0.577350 em); % left edge
+    \hexcoord{#1}{2}
+    \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (0 em,-0.577350 em) -- (0.5 em,-0.288675 em) -- (0.5 em,0.288675 em); % right edge
+    %        \else % 1, hopefully
+    %            % Coloured boundary
+    %            \hexcoord{1}{1}
+    %            \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom edge
+    %            \hexcoord{1}{#2}
+    %            \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,0.288675 em) -- (0 em,0.577350 em) -- (0.5 em,0.288675 em); % top edge
     \fi
-    
+    \else
+    \pgfmathsetmacro\Iaend{#2-1}
+    \foreach \Ia in {2,...,\Iaend}{ % left to right player B
+        % Coloured boundary
+        \hexcoord{1}{\Ia}
+        \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (-0.5 em,0.288675 em) -- (0 em,0.577350 em); % left edge
+        \hexcoord{#1}{\Ia}
+        \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (0 em,-0.577350 em) -- (0.5 em,-0.288675 em) -- (0.5 em,0.288675 em); % right edge
+    }
+    \fi
+
     % Awkward corners
     \hexcoord{#1}{1}
     \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=butt] (0.25 em,-0.4330125 em) -- (0.5 em,-0.288675 em);
-    
+
     \ifnum#2>1
-        \hexcoord{1}{1}
-        \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=] (-0.5 em,-0.288675 em) -- (-0.5 em,0.288675 em) -- (0 em,0.577350 em); % bottom left colorB
-        \hexcoord{#1}{#2}
-        \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (0 em,-0.577350 em) -- (0.5 em,-0.288675 em) -- (0.5 em,0.288675 em); % top right colorB
-    \fi 
-    
+    \hexcoord{1}{1}
+    \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=] (-0.5 em,-0.288675 em) -- (-0.5 em,0.288675 em) -- (0 em,0.577350 em); % bottom left colorB
+    \hexcoord{#1}{#2}
+    \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (0 em,-0.577350 em) -- (0.5 em,-0.288675 em) -- (0.5 em,0.288675 em); % top right colorB
+    \fi
+
     \hexcoord{#1}{1}
     \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (0.5 em,-0.288675 em) -- (0.5 em,0.288675 em); % bottom right colorB
-    
+
     \hexcoord{1}{#2}
     \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (-0.5 em,0.288675 em); % top left colorB
     \draw[\colorB,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=butt] (-0.25 em,0.4330125 em) -- (-0.5 em,0.288675 em); % awkward bit
@@ -277,26 +282,25 @@
         \foreach \Ia in {1,...,\Iaend}{
             \hexcell{\Ia}{\Ib}
         }
-        
+
     }
 }
 
 \newcommand{\hexbottomsubborder}[2]{%
     % Coloured boundary
-    
+
     % bottom edge
-    \foreach \Ia in {#1,...,#2}{ 
+    \foreach \Ia in {#1,...,#2}{
         % Coloured boundary
         \hexcoord{\Ia}{1}
         \draw[\colorA,shift={(\xchor em,\ychor em)},line width=\hexedgewidth em,line cap=round] (-0.5 em,-0.288675 em) -- (0 em,-0.577350 em) -- (0.5 em,-0.288675 em); % bottom edge
     }
 }
 
-
 \newcommand{\hexreducing}[2]{
     % Place the hex cells.
     \hexreducingnoborder{#1}{#2}
-    
+
     % bottom edge
     \hexbottomsubborder{1}{#1}
 }
@@ -312,7 +316,7 @@
 \newcounter{hexedge}
 \newcommand{\hexgrid}[2]{
     \hexgridnolabel{#1}{#2}
-    
+
     % labels
     \setcounter{hexedge}{0}
     \foreach \Ia in {1,...,#1}{
@@ -320,9 +324,9 @@
         \pgfmathsetmacro\leftofIa{\Ia+0.1}
         \pgfmathsetmacro\belowIa{1-1/sqrt(3)-0.2}
         \ifnum\value{hexedge}<27
-            \node[scale=0.3] at (\leftofIa em,\belowIa em) {{\sf\color{\colorA}\alph{hexedge}}};
+        \node[scale=0.3] at (\leftofIa em,\belowIa em) {{\sf\color{\colorA}\alph{hexedge}}};
         \else
-            \node[scale=0.3] at (\leftofIa em,\belowIa em) {{\sf\color{\colorA}\arabic{hexedge}}};
+        \node[scale=0.3] at (\leftofIa em,\belowIa em) {{\sf\color{\colorA}\arabic{hexedge}}};
         \fi
     }
     \setcounter{hexedge}{0}
@@ -345,19 +349,17 @@
 \newcommand{\hexmovenumber}{0} % label of current move
 
 \newcounter{hexlabelling}
-
 \newenvironment{hexgame}[1][11]{%
-\begin{hexpicture}
-    \hexboard{#1}
-    \setcounter{hexmovecount}{0}
-    \setcounter{hexmoveskips}{0}
-    \setcounter{hexlabelling}{0}}
-{\end{hexpicture}}
+    \begin{hexpicture}
+        \hexboard{#1}
+        \setcounter{hexmovecount}{0}
+        \setcounter{hexmoveskips}{0}
+        \setcounter{hexlabelling}{0}}
+    {\end{hexpicture}}
 \newenvironment{hexgamelabels}[1][11]{%
-\begin{hexgame}[#1]
-    \setcounter{hexlabelling}{1}}
-{\end{hexgame}}
-
+    \begin{hexgame}[#1]
+        \setcounter{hexlabelling}{1}}
+    {\end{hexgame}}
 
 \newcommand{\hexthismover}{B}
 
@@ -365,12 +367,15 @@
     \addtocounter{hexmovecount}{1}
     \renewcommand{\hexthismover}{B}
     \ifodd\value{hexmovecount}\renewcommand{\hexthismover}{A}\fi
-    
+
     \pgfmathtruncatemacro\hexmovenumber{\value{hexmovecount}-\value{hexmoveskips}} % move label is moves minus skips
-    \ifnum \value{hexlabelling}=1 \hexcounterlabel{#1}{#2}{\hexthismover}{\hexmovenumber}\else\hexcounter{#1}{#2}{\hexthismover}\fi
+    \ifnum\value{hexlabelling}=1\hexcounterlabel{#1}{#2}{\hexthismover}{\hexmovenumber}\else\hexcounter{#1}{#2}{\hexthismover}\fi
 }
 
 \newcommand{\hexskipmove}{%
     \addtocounter{hexmovecount}{1}
     \addtocounter{hexmoveskips}{1}
 }
+\endinput
+%%
+%% End of file `hexboard.sty'.
