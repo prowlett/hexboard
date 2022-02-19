@@ -3,9 +3,9 @@
 \usepackage{upquote}
 \usepackage{hexboard}
 \usepackage{rotating}
-\title{hexboard}
-\author{}
-\date{}
+\usepackage{hyperref}
+\title{hexboard v1.0}
+\author{Peter Rowlett and Chris Sangwin}
 
 \begin{document}   
     
@@ -34,6 +34,10 @@
     \end{center}
     
     \tableofcontents
+    
+    \section{Background}
+    
+    \verb|hexboards| is a package for \LaTeX\ that provides functionality for drawing Hex boards and games. The aim is a clean, clear design with flexibility for drawing different sorts of Hex diagrams. 
     
     \section{Usage notes}
     
@@ -623,7 +627,7 @@
     
     \begin{verbatim}\begin{hexpicture}
     \hexreducingnoborder{5}{4}
-\end{hexpictuTre}\end{verbatim}
+\end{hexpicture}\end{verbatim}
     
     \begin{hexpicture}
         \hexreducingnoborder{5}{4}
@@ -1281,22 +1285,5 @@
         \hexcellshaded{h}{11}
         \hexshadedsubrow{b}{g}{12}
     \end{hexpicture}
-    
-    \section{Potential future development}
-    
-    \begin{itemize}
-        \item It wouldn't be hard to copy the code that changes letters to numbers in \verb|\hexcoord| across to the places such as \verb|\hexgrid| (basically anywhere the user can specify a number of columns that goes into a \verb|\foreach|) so that board sizes can be specified using a letter number for columns, if this were thought useful.
-        
-        \item It might be good to rework the package so the basic unit is larger, say 2em and then default \verb|\hexscale| to 1. This would help with text sizing.
-    
-        \item The command \verb|\hexreducing| and \verb|\hexbottomsubborder| could be matched by equivalents on the other borders.
-        
-        \item Investigate rotating the graphics produced. At present, for example simply adding an optional parameter to \verb|hexpicture| like this  
-        
-        \begin{verbatim}\newenvironment{hexpicture}[1][0]{\begin{tikzpicture}[hex,rotate=#1,transform
-shape]}{\end{tikzpicture}}\end{verbatim}
-        
-        does not behave as desired.
-    \end{itemize}
     
 \end{document}
